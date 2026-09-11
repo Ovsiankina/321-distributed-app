@@ -28,7 +28,7 @@ Ordre :
 - [-] Parler des tâches faites durant le dernier sprint
 - [-] Parler des difficultés rencontrées
 - [-] Optionnel : Demander de l'aide. e.g "je suis bloqué sur X, pouvez-vous m'aider après le call ?".
-- [-] Parler des taches prévues pour le sprint
+- [-] Parler des taches prévues pour le sprint suivant
 
 ### Outro d'Adrien
 
