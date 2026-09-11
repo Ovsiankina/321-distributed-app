@@ -23,9 +23,20 @@ implémentation d’un service de streaming miniature.
 • Visionnage sans compte
 • Favoris
 
+### landing page
+
+- Vignettes style youtube
+- barre de recherche (stub)
+- Bouton "upload" (stub)
+- bouton "account"
+- filtre par tag (recherche de video)
+
+### 
+
 ## Description de l’attribution des rôles
 
- L’équipe
+Les rôles sont attribués selon les préférences de chacun, et les besoins
+du groupe.
 
 ## En classe DEVA 4A
 
@@ -37,8 +48,8 @@ implémentation d’un service de streaming miniature.
 ## Les rôles
 
 • Adrien : Dev (Front), Scrum master
-• Timothee : Dev (back)
-• Dmytro : Dev (Front), Responsable de la DX et du design de l’API
+• Timothee : Dev, Responsable de la capture video des daily scrums
+• Dmytro : Dev, Responsable de la DX et du design de l’API
 • David : Product Owner, Dev Back, Planification architecturale
 
 # Description de la méthodologie de travail
