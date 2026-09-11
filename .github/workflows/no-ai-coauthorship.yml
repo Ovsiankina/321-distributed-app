@@ -28,9 +28,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Motifs d'attribution IA interdits (recherche insensible à la casse).
-          # On cible les trailers de co-auteur et les pieds de page « generated with ».
-          PATTERNS=(
+          # Motifs d'attribution IA interdits dans le MESSAGE de commit
+          # (trailers de co-auteur et pieds de page « generated with »).
+          MESSAGE_PATTERNS=(
             'co-authored-by:.*claude'
             'co-authored-by:.*anthropic'
             'co-authored-by:.*chatgpt'
@@ -49,6 +49,22 @@ jobs:
             '🤖 generated with'
           )
 
+          # Motifs interdits dans l'IDENTITÉ (auteur/committer) du commit.
+          # Cursor est surveillé de près : son agent peut committer directement
+          # en tant que « Cursor Agent <cursoragent@cursor.com> » — ce qui
+          # n'apparaît PAS dans un trailer et échapperait au seul scan du message.
+          # « cursor » (nu) couvre le nom « Cursor », « Cursor Agent »,
+          # « cursoragent » et le domaine « @cursor.com » d'un seul motif.
+          IDENTITY_PATTERNS=(
+            'cursor'
+            'anthropic\.com'
+            'claude'
+            'chatgpt'
+            '@openai\.com'
+            'copilot'
+            'gemini'
+          )
+
           fail=0
           # Liste des commits propres à la PR (base..head).
           commits="$(git log --no-merges --format='%H' "$BASE_SHA".."$HEAD_SHA")"
@@ -61,11 +77,22 @@ jobs:
           while read -r sha; do
             [ -z "$sha" ] && continue
             msg="$(git log -1 --format='%B' "$sha")"
+            # Identité auteur + committer, sur deux lignes « Nom <email> ».
+            identity="$(git log -1 --format='%an <%ae>%n%cn <%ce>' "$sha")"
             short="$(git log -1 --format='%h %s' "$sha")"
-            for p in "${PATTERNS[@]}"; do
+
+            for p in "${MESSAGE_PATTERNS[@]}"; do
               if printf '%s' "$msg" | grep -iqE "$p"; then
-                echo "::error::Attribution IA interdite dans le commit $short (motif : $p)"
+                echo "::error::Attribution IA dans le message du commit $short (motif : $p)"
                 printf '%s' "$msg" | grep -iE "$p" | sed 's/^/    | /'
+                fail=1
+              fi
+            done
+
+            for p in "${IDENTITY_PATTERNS[@]}"; do
+              if printf '%s' "$identity" | grep -iqE "$p"; then
+                echo "::error::Auteur/committer IA sur le commit $short (motif : $p)"
+                printf '%s' "$identity" | grep -iE "$p" | sed 's/^/    | /'
                 fail=1
               fi
             done
