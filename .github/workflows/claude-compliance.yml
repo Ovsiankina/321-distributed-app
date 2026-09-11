@@ -36,6 +36,9 @@ jobs:
           # Generate locally with `claude setup-token`, then store it as the
           # repository secret CLAUDE_CODE_OAUTH_TOKEN.
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Use the workflow's built-in token to post the PR comment, so the
+          # Claude GitHub App does not need to be installed on the repo.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             You are reviewing this pull request for compliance with the
             project's CONTRIBUTING.md (and AGENTS.md, if present). Read those
