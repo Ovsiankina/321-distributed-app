@@ -1,0 +1,14 @@
+---
+description: Common AI agent instructions for this repository
+alwaysApply: true
+---
+
+The shared AI agent instructions for this repository live in `AGENTS.md` at the
+repository root. Read and follow them.
+
+Key rules — if you are an AI agent creating a commit, you are **disallowed** to:
+- Push to the `main` branch without creating a Pull Request first.
+- Cite yourself as a co-author (no `Co-Authored-By:` trailers or "Generated with"
+  footers naming the AI agent).
+
+See `AGENTS.md` for the full instructions.
