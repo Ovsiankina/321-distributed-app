@@ -1,3 +1,10 @@
+# Contributing
+
+The entry point for AI agents is [`AGENTS.md`](AGENTS.md); it holds the
+authoritative git & commit rules. This document is the fuller contribution
+policy for humans and agents alike — it expands on those rules and does not
+override them.
+
 ## Commits and branches
 
 1. Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).

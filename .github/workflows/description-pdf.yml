@@ -1,0 +1,71 @@
+name: Générer le PDF de la description
+
+# Ne se déclenche QUE lorsque la description du projet change
+# (ou lors d'un lancement manuel).
+on:
+  push:
+    paths:
+      - "documentation/master-project-description-FR.md"
+      - ".github/workflows/description-pdf.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: description-pdf-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SOURCE_MD: documentation/master-project-description-FR.md
+  OUTPUT_PDF: documentation/master-project-description-FR.pdf
+
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Installer pandoc et XeLaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pandoc \
+            texlive-xetex \
+            texlive-latex-recommended \
+            texlive-fonts-recommended \
+            fonts-dejavu
+
+      - name: Générer le PDF
+        run: |
+          # PDF déterministe : on fige la date sur le dernier commit du fichier
+          # (sinon XeLaTeX embarque un timestamp et le PDF change à chaque run).
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct -- "$SOURCE_MD")"
+          export FORCE_SOURCE_DATE=1
+          pandoc "$SOURCE_MD" \
+            -o "$OUTPUT_PDF" \
+            --pdf-engine=xelatex \
+            -V mainfont="DejaVu Sans" \
+            -V geometry:margin=2.5cm
+
+      - name: Publier le PDF comme artifact du run
+        uses: actions/upload-artifact@v4
+        with:
+          name: description-projet-pdf
+          path: ${{ env.OUTPUT_PDF }}
+
+      # Le commit du PDF n'est fait que sur les branches de feature.
+      # main est protégée (push direct interdit) : le PDF y arrive via la PR.
+      - name: Committer le PDF s'il a changé
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$OUTPUT_PDF"
+          if git diff --cached --quiet; then
+            echo "Aucun changement du PDF à committer."
+          else
+            git commit -m "docs: régénère le PDF de la description du projet [skip ci]"
+            git push
+          fi
