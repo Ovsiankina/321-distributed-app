@@ -1,11 +1,15 @@
-import { VideoGrid } from './components/VideoGrid'
-import { videos } from './data/videos'
+import { Route, Routes } from 'react-router-dom'
+import { AccountPage } from './pages/AccountPage'
+import { LandingPage } from './pages/LandingPage'
+import { UploadPage } from './pages/UploadPage'
 
 function App() {
   return (
-    <main>
-      <VideoGrid videos={videos} />
-    </main>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/upload" element={<UploadPage />} />
+      <Route path="/account" element={<AccountPage />} />
+    </Routes>
   )
 }
 
