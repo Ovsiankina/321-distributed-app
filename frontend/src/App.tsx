@@ -1,5 +1,12 @@
+import { VideoGrid } from './components/VideoGrid'
+import { videos } from './data/videos'
+
 function App() {
-  return <div>frontend</div>
+  return (
+    <main>
+      <VideoGrid videos={videos} />
+    </main>
+  )
 }
 
 export default App
