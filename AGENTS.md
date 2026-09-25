@@ -16,8 +16,10 @@ git & commit rules below always apply.
 If you are an AI agent and you want to create a commit, you are **disallowed** to:
 
 **a) Push to the `main` branch without creating a Pull Request first.**
-   Always work on a dedicated branch and open a PR. `main` must only ever be
-   updated through a reviewed and merged PR — never via a direct push.
+   Always work on a dedicated branch and open a PR towards `main` once the work
+   is ready. `main` must only ever be updated through a reviewed and merged PR —
+   never via a direct push. See [Branches & pull requests](#branches--pull-requests)
+   for when a PR is (and is not) expected.
 
 **b) Commit citations and authorship**
    Do not add `Co-Authored-By:` trailers, `Co-authored-by` lines, "Generated with"
@@ -34,6 +36,38 @@ If you are an AI agent and you want to create a commit, you are **disallowed** t
 - **Explain the change** — every contribution briefly explains what it does, in
   the commit body, the PR description, or both.
 - **Pull requests** use [`.github/pull_request_template.md`](.github/pull_request_template.md).
+
+## Branches & pull requests
+
+Reviewers read every PR by hand: do not make them open PRs with nothing to
+review, and do not leave a trail of throwaway branches behind.
+
+### Branches
+
+- **Check before you create.** Run `git branch -a` first. If a branch already
+  exists for the feature or issue, keep working on it.
+- **One branch per feature / issue, not per step.** Split a feature into steps
+  with commits on the same branch, not with a chain of stacked branches
+  (`feat/x` → `feat/x-part2` → `feat/x-part3` …).
+- **Clean up.** Once a branch is merged, delete it locally (`git branch -d
+  <branch>`) and remotely.
+
+### Pull requests
+
+- **Only open a PR to merge into `main`** (protected, PR mandatory) **or into
+  a branch owned by someone else.** Merging one of the user's own branches into
+  another of their own branches is done locally, without a PR:
+
+  ```sh
+  git switch feat/frontend-scaffold && git merge feat/landing-grid
+  ```
+
+- **A PR is a complete unit of work** — typically a whole feature or issue made
+  of several meaningful commits. Keep committing on the branch until the work
+  is done, then open one PR. Single-commit or draft PRs are not useful to
+  review; they are only acceptable towards `main` for a truly isolated change
+  (e.g. a standalone fix).
+- **If unsure whether a PR is warranted, ask the user** before opening it.
 
 ## General guidance
 
