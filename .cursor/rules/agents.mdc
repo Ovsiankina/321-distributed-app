@@ -11,4 +11,8 @@ Key rules — if you are an AI agent creating a commit, you are **disallowed** t
 - Cite yourself as a co-author (no `Co-Authored-By:` trailers or "Generated with"
   footers naming the AI agent).
 
+Branches & PRs: reuse existing branches (check `git branch -a`), one branch per
+feature, no stacked branches. Only open a PR towards `main` or a branch owned by
+someone else — merge your own branches locally. No single-commit/draft PRs.
+
 See `AGENTS.md` for the full instructions.
