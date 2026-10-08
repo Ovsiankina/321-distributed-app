@@ -1,0 +1,450 @@
+openapi: 3.0.3
+info:
+  title: API Gateway
+  version: 0.1.0
+  description: |
+    Contrat public de la Gateway (E0-05).
+
+    Surface couverte : santé, stub d'accueil, préfixes proxy.
+    Les opérations métier (corps auth, catalogue, stream, sous-titres)
+    ne sont pas dans cette version. Elles seront ajoutées par E1-05.
+
+    Toute requête client passe par la Gateway. Aucune URL de microservice
+    n'est publique.
+
+servers:
+  - url: /
+    description: Origine de la Gateway. Le port d'écoute est fixé par E0-04.
+
+tags:
+  - name: gateway
+    description: Routes produites par la Gateway
+  - name: proxy
+    description: Forward transparent vers un microservice
+
+paths:
+  /health:
+    get:
+      tags: [gateway]
+      operationId: getHealth
+      summary: Santé de la Gateway
+      responses:
+        "200":
+          description: Gateway opérationnelle
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+                service: gateway
+
+  /api/home:
+    get:
+      tags: [gateway]
+      operationId: getHome
+      summary: Accueil (stub)
+      description: |
+        Enveloppe stable. E0-05 ne définit pas le contenu de `sections`.
+        Tant que le catalogue n'est pas contracté, la réponse de référence
+        est une liste vide.
+      responses:
+        "200":
+          description: Enveloppe home
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeStubResponse"
+              example:
+                sections: []
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/auth/{path}:
+    parameters:
+      - $ref: "#/components/parameters/ProxyPath"
+    x-proxied-to: auth
+    get:
+      tags: [proxy]
+      operationId: proxyAuthGet
+      summary: Forward GET vers Auth
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    post:
+      tags: [proxy]
+      operationId: proxyAuthPost
+      summary: Forward POST vers Auth
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    put:
+      tags: [proxy]
+      operationId: proxyAuthPut
+      summary: Forward PUT vers Auth
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    patch:
+      tags: [proxy]
+      operationId: proxyAuthPatch
+      summary: Forward PATCH vers Auth
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    delete:
+      tags: [proxy]
+      operationId: proxyAuthDelete
+      summary: Forward DELETE vers Auth
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/catalog/{path}:
+    parameters:
+      - $ref: "#/components/parameters/ProxyPath"
+    x-proxied-to: catalog
+    get:
+      tags: [proxy]
+      operationId: proxyCatalogGet
+      summary: Forward GET vers Catalog
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    post:
+      tags: [proxy]
+      operationId: proxyCatalogPost
+      summary: Forward POST vers Catalog
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    put:
+      tags: [proxy]
+      operationId: proxyCatalogPut
+      summary: Forward PUT vers Catalog
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    patch:
+      tags: [proxy]
+      operationId: proxyCatalogPatch
+      summary: Forward PATCH vers Catalog
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    delete:
+      tags: [proxy]
+      operationId: proxyCatalogDelete
+      summary: Forward DELETE vers Catalog
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/stream/{path}:
+    parameters:
+      - $ref: "#/components/parameters/ProxyPath"
+    x-proxied-to: streaming
+    get:
+      tags: [proxy]
+      operationId: proxyStreamGet
+      summary: Forward GET vers Streaming
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    post:
+      tags: [proxy]
+      operationId: proxyStreamPost
+      summary: Forward POST vers Streaming
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    put:
+      tags: [proxy]
+      operationId: proxyStreamPut
+      summary: Forward PUT vers Streaming
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    patch:
+      tags: [proxy]
+      operationId: proxyStreamPatch
+      summary: Forward PATCH vers Streaming
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    delete:
+      tags: [proxy]
+      operationId: proxyStreamDelete
+      summary: Forward DELETE vers Streaming
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/subtitles/{path}:
+    parameters:
+      - $ref: "#/components/parameters/ProxyPath"
+    x-proxied-to: subtitles
+    get:
+      tags: [proxy]
+      operationId: proxySubtitlesGet
+      summary: Forward GET vers Subtitles
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    post:
+      tags: [proxy]
+      operationId: proxySubtitlesPost
+      summary: Forward POST vers Subtitles
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    put:
+      tags: [proxy]
+      operationId: proxySubtitlesPut
+      summary: Forward PUT vers Subtitles
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    patch:
+      tags: [proxy]
+      operationId: proxySubtitlesPatch
+      summary: Forward PATCH vers Subtitles
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    delete:
+      tags: [proxy]
+      operationId: proxySubtitlesDelete
+      summary: Forward DELETE vers Subtitles
+      description: |
+        Forward transparent. Les headers Authorization et Content-Type
+        sont transmis sans modification. Le corps de la réponse du
+        microservice est hors E0-05.
+      responses:
+        "200":
+          $ref: "#/components/responses/Proxied"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+components:
+  parameters:
+    ProxyPath:
+      name: path
+      in: path
+      required: true
+      description: |
+        Reste du chemin sous le préfixe, transmis tel quel.
+        Le runtime forward tout le préfixe (E0-04), y compris plusieurs segments.
+      schema:
+        type: string
+
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        service:
+          type: string
+          example: gateway
+
+    HomeStubResponse:
+      type: object
+      additionalProperties: false
+      required: [sections]
+      properties:
+        sections:
+          type: array
+          description: Schéma des éléments hors E0-05.
+          items:
+            type: object
+
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required: [detail]
+      properties:
+        detail:
+          type: string
+
+  responses:
+    Proxied:
+      description: |
+        Réponse du microservice, transmise sans transformation.
+        Le schéma du corps est hors E0-05.
+    NotFound:
+      description: |
+        Préfixe inconnu de la Gateway.
+        Une 404 produite par le microservice est transmise telle quelle
+        et n'utilise pas forcément ce schéma.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: Route inconnue
+    BadGateway:
+      description: Microservice injoignable.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: Service indisponible
