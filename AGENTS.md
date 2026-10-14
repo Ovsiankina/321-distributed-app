@@ -72,8 +72,11 @@ review, and do not leave a trail of throwaway branches behind.
 ## General guidance
 
 - Keep changes scoped to what was requested; ask before large or destructive edits.
-- Match the existing style, structure, and language of the files you touch
-  (project documentation is primarily in French).
+- Match the existing style and structure of the files you touch.
+- One file, one language. Product and course docs (`docs/**` prose, OpenAPI
+  descriptions, API `detail` strings, issues) are French. Engineering policy
+  (this file, CONTRIBUTING.md, CLAUDE.md, the PR template) stays English.
+  When editing a file, translate leftover boilerplate into that file's language.
 - Write clear, conventional commit messages describing *what* and *why*.
 - AI-generated code gets the same review as any other; you must be able to
   explain every submitted line.

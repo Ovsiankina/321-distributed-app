@@ -1,15 +1,16 @@
 # API Gateway
 
-> **Status: partial (E0-05, E1-05).** Les sections remplies ci-dessous sont stables.
+> **Statut : partiel (E0-05, E1-05).** Les sections remplies ci-dessous sont stables.
 > Tout ce qui reste en _TODO_ n'est pas défini.
 >
-> **Do not implement a TODO section. IT WILL BREAK.** Wait until that section
-> is finalized and marked stable.
+> **Ne pas implémenter une section en _TODO_. Ça cassera.** Attendre qu'elle
+> soit finalisée et marquée stable.
 >
-> Once a section is stable, every API MUST strictly comply with it and with
-> [`api/gateway.openapi.yaml`](api/gateway.openapi.yaml). Schemas and examples
-> live in the OpenAPI file. If the two diverge, the YAML wins and this file is
-> updated in the same PR (see [`CONTRIBUTING.md`](../CONTRIBUTING.md)).
+> Dès qu'une section est stable, toute API doit s'y conformer, ainsi qu'à
+> [`api/gateway.openapi.yaml`](api/gateway.openapi.yaml). Les schémas et les
+> exemples vivent dans le fichier OpenAPI. En cas d'écart, le YAML fait foi
+> et ce fichier est mis à jour dans la même PR
+> (voir [`CONTRIBUTING.md`](../CONTRIBUTING.md)).
 
 ## Conventions
 
@@ -19,9 +20,9 @@
 - `Authorization: Bearer <JWT>` est requis sur `GET /api/auth/me` et sur `GET|POST|DELETE /api/auth/favorites/*`. Il est émis par `POST /api/auth/register` et `POST /api/auth/login`. Catalogue, recherche et streaming n'exigent pas de JWT.
 - Le client n'appelle aucun microservice directement.
 
-_TODO: Base URL (le port d'écoute est fixé par E0-04), versioning._
+_TODO : URL de base (le port d'écoute est fixé par E0-04), versioning._
 
-## Endpoints
+## Points d'entrée
 
 Méthode, chemin et codes seulement. Les schémas et les exemples sont dans le fichier OpenAPI, pas recopiés ici.
 
@@ -45,9 +46,9 @@ Méthode, chemin et codes seulement. Les schémas et les exemples sont dans le f
 
 Hors de ces chemins : 404.
 
-_TODO: For each remaining endpoint define: method, path, request schema, response schema, status codes, and examples (catalogue tags, HLS, fichiers de sous-titres)._
+_TODO : pour chaque endpoint restant, définir la méthode, le chemin, le schéma de requête, le schéma de réponse, les codes et des exemples (tags du catalogue, HLS, fichiers de sous-titres)._
 
-## Errors
+## Erreurs
 
 | Code | `detail` | Cas |
 |------|----------|-----|
@@ -62,6 +63,6 @@ _TODO: For each remaining endpoint define: method, path, request schema, respons
 
 Le streaming répond aussi `206` quand la requête porte un header `Range`. Ce n'est pas une erreur.
 
-## Testing
+## Tests
 
-_TODO: Describe the conformance tests every API implementation must pass._
+_TODO : décrire les tests de conformité que toute implémentation doit passer._
