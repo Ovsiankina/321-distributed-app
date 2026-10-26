@@ -1,2 +1,11 @@
 # Sauvegardes automatiques draw.io
 *.drawio.bkp
+
+# Dataset de test
+datasets/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/

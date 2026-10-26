@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "videos": [
+    {
+      "id": "test-video-one",
+      "channel_id": "UC_test_channel_one",
+      "title": "Internet et réseaux",
+      "description": "Explication du fonctionnement d'Internet.",
+      "tags": ["internet", "réseau"],
+      "categories": ["Education"],
+      "duration_string": "26:02"
+    },
+    {
+      "id": "test-video-two",
+      "channel_id": "UC_test_channel_two",
+      "title": "Daily Scrum bimensuel",
+      "description": "Agile pour le module 321.",
+      "tags": ["agile", "scrum"],
+      "categories": [],
+      "duration_string": "10:00"
+    }
+  ]
+}

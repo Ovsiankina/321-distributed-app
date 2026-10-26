@@ -1,0 +1,40 @@
+name: Tests d'intégration catalog
+
+on:
+  pull_request:
+    paths:
+      - "services/catalog/**"
+      - "tests/integration/**"
+      - "docs/api/gateway.openapi.yaml"
+      - ".github/workflows/integration-catalog.yml"
+  workflow_dispatch:
+
+jobs:
+  catalog-mariadb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Démarrer MariaDB catalog
+        working-directory: services/catalog
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.integration.yml -p catalog-int up -d catalog-db
+
+      - name: Installer les dépendances
+        run: |
+          python -m pip install -r tests/integration/requirements.txt
+          python -m pip install -r services/catalog/requirements.txt
+
+      - name: pytest (catalog ↔ MariaDB)
+        run: |
+          pytest tests/integration/test_catalog_mariadb.py -m integration -v
+
+      - name: Arrêter les conteneurs
+        if: always()
+        working-directory: services/catalog
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.integration.yml -p catalog-int down -v
