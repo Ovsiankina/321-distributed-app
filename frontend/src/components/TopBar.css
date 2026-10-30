@@ -1,17 +1,33 @@
 .top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-areas: 'brand search actions';
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
+  background: rgba(15, 15, 18, 0.92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
 }
 
 .top-bar-brand {
-  grid-area: brand;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.top-bar-logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--accent);
 }
 
 .top-bar-search-form {
@@ -21,41 +37,36 @@
   gap: 8px;
   justify-self: center;
   width: 100%;
-  min-width: 0;
   max-width: 480px;
 }
 
 .top-bar-search {
   flex: 1;
-  min-width: 0;
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(128, 128, 128, 0.4);
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--text);
 }
 
 .top-bar-search-submit {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid rgba(128, 128, 128, 0.4);
-  background: transparent;
-  color: inherit;
+  border: 0;
+  background: var(--accent);
+  /* Same as the default button text under color-scheme: dark (index.css); kept for themes without it. */
+  color: white;
   cursor: pointer;
 }
 
-.top-bar-search-submit:hover {
-  background: rgba(128, 128, 128, 0.15);
-}
-
 .top-bar-actions {
-  grid-area: actions;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
 .top-bar-icon-link {
@@ -64,12 +75,40 @@
   justify-content: center;
   width: 40px;
   height: 40px;
+  border: 0;
   border-radius: 50%;
+  background: transparent;
   color: inherit;
+  cursor: pointer;
 }
 
 .top-bar-icon-link:hover {
-  background: rgba(128, 128, 128, 0.15);
+  background: var(--panel);
+}
+
+.top-bar-text-link {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.top-bar-email {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.top-bar-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #27272a;
 }
 
 @media (max-width: 768px) {
@@ -82,5 +121,14 @@
 
   .top-bar-search-form {
     max-width: none;
+  }
+
+  .top-bar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .top-bar-email {
+    display: none;
   }
 }

@@ -1,13 +1,16 @@
 .video-card {
+  /* Redundant inside VideoGrid (grid items are blockified); kept so the card works anywhere. */
   display: block;
-  color: inherit;
-  text-decoration: none;
+  padding-bottom: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--panel);
 }
 
 .video-card-thumbnail {
   position: relative;
-  border-radius: 8px;
-  overflow: hidden;
+  background: #111;
 }
 
 .video-card-thumbnail img {
@@ -25,14 +28,39 @@
   padding: 2px 6px;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.8);
-  color: #fff;
   font-size: 12px;
   line-height: 1.4;
 }
 
 .video-card-title {
-  margin: 8px 0 0;
+  margin: 0;
+  padding: 10px 12px 0;
   font-size: 15px;
   line-height: 1.3;
-  font-weight: 500;
+}
+
+.video-card-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5em;
+  margin: 6px 0 0;
+  padding: 0 12px;
+  color: var(--muted);
+}
+
+.video-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 0 12px;
+}
+
+.video-card-tag {
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.8rem;
 }

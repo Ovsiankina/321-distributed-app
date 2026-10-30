@@ -1,4 +1,4 @@
-import type { Video } from '../data/videos'
+import type { Video } from '../lib/types'
 import { VideoCard } from './VideoCard'
 import './VideoGrid.css'
 

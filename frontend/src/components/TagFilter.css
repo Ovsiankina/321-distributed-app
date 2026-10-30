@@ -2,17 +2,20 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 16px 0;
+  margin: 16px 0 24px;
 }
 
 .tag-filter-chip {
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(128, 128, 128, 0.4);
-  background: transparent;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
 .tag-filter-chip.is-selected {
-  background: rgba(128, 128, 128, 0.35);
+  background: var(--text);
+  color: #111;
 }
