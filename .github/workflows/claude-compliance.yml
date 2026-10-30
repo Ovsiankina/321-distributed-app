@@ -1,0 +1,66 @@
+name: Claude compliance review
+
+# Advisory AI review that checks each PR against CONTRIBUTING.md.
+# It comments on the PR; it is NOT a hard gate — the human author stays
+# responsible for the diff (see CONTRIBUTING.md).
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Least privilege: read the code, write PR comments, and mint an OIDC token
+# (required by claude-code-action). No access to other secrets.
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+# One run per PR; a new push cancels the previous, still-running review.
+concurrency:
+  group: claude-compliance-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude compliance review
+        uses: anthropics/claude-code-action@v1
+        with:
+          # OAuth token from a Claude Pro/Max subscription.
+          # Generate locally with `claude setup-token`, then store it as the
+          # repository secret CLAUDE_CODE_OAUTH_TOKEN.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Use the workflow's built-in token to post the PR comment, so the
+          # Claude GitHub App does not need to be installed on the repo.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            You are reviewing this pull request for compliance with the
+            project's CONTRIBUTING.md (and AGENTS.md, if present). Read those
+            files, then review the PR diff.
+
+            Check, at minimum:
+            - Commit messages follow Conventional Commits.
+            - The branch name follows Conventional Branch.
+            - The PR explains what the change does.
+            - Distributed-app rules: tooling is installable on Ubuntu Docker
+              containers; the change complies with docs/ARCHITECTURE.md; any
+              API strictly complies with docs/API_GATEWAY.md. If either doc is
+              still WIP and the PR implements against it, flag that as a
+              blocking concern.
+            - AI-assistance rules, e.g. no `Co-authored-by:` trailers for AI
+              tools and no "generated with" footers.
+
+            Post ONE concise PR comment. Group findings as:
+            - Blocking (violates a MUST rule)
+            - Suggestions (nice to have)
+            - Looks good (what already complies)
+
+            Be specific and cite the rule. This review is advisory: remind the
+            reader that the human author remains responsible for the diff. Do
+            not approve or merge anything.

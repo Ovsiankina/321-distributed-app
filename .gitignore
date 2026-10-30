@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Sauvegardes automatiques draw.io
+*.drawio.bkp

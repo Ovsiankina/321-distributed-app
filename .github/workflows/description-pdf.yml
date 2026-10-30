@@ -5,7 +5,7 @@ name: Générer le PDF de la description
 on:
   push:
     paths:
-      - "documentation/master-project-description-FR.md"
+      - "docs/master-project-description-FR.md"
       - ".github/workflows/description-pdf.yml"
   workflow_dispatch:
 
@@ -17,8 +17,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  SOURCE_MD: documentation/master-project-description-FR.md
-  OUTPUT_PDF: documentation/master-project-description-FR.pdf
+  SOURCE_MD: docs/master-project-description-FR.md
+  OUTPUT_PDF: docs/master-project-description-FR.pdf
 
 jobs:
   build-pdf:

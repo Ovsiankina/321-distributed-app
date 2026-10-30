@@ -1,0 +1,101 @@
+<mxfile host="Electron">
+  <diagram name="Architecture" id="arch321">
+    <mxGraphModel dx="972" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="db_login" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;spacingLeft=10;" value="&lt;b&gt;DB&lt;/b&gt;&lt;br&gt;- utilisateurs&lt;br&gt;- hashed pwd" vertex="1">
+          <mxGeometry height="110" width="160" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="db_query" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;spacingLeft=10;" value="&lt;b&gt;DB&lt;/b&gt;&lt;br&gt;- Vidéo (qualité originale)&lt;br&gt;- SRT" vertex="1">
+          <mxGeometry height="110" width="160" x="240" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="db_user" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;spacingLeft=10;" value="&lt;b&gt;DB&lt;/b&gt;&lt;br&gt;- favoris&lt;br&gt;- watch later&lt;br&gt;- préférences&lt;br&gt;- etc." vertex="1">
+          <mxGeometry height="110" width="160" x="440" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="nodb_stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fontColor=#999999;strokeColor=#999999;" value="&lt;strike&gt;Pas de DB&lt;/strike&gt;" vertex="1">
+          <mxGeometry height="50" width="160" x="640" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="ms_login" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Login&lt;/b&gt;&lt;br&gt;&lt;br&gt;Vérification des tokens" vertex="1">
+          <mxGeometry height="300" width="160" x="40" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ms_query" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Query / DB&lt;/b&gt;&lt;br&gt;&lt;br&gt;Pas restreint par le login&lt;br&gt;&lt;br&gt;Upload passe obligatoirement par le MS d&#39;upload&lt;br&gt;&lt;br&gt;Unrestricted GET queries" vertex="1">
+          <mxGeometry height="300" width="160" x="240" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ms_user" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Gestion utilisateur&lt;/b&gt;&lt;br&gt;&lt;br&gt;- Paramètres / settings" vertex="1">
+          <mxGeometry height="300" width="160" x="440" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ms_stream" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Streaming&lt;/b&gt;&lt;br&gt;&lt;br&gt;Gérer plusieurs streams en simultané&lt;br&gt;&lt;br&gt;Modification de la qualité" vertex="1">
+          <mxGeometry height="300" width="160" x="640" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ms_upload" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=10;" value="&lt;b&gt;Upload&lt;/b&gt;&lt;br&gt;&lt;br&gt;Conversion du format ou qualité de la vidéo, si nécessaire&lt;br&gt;&lt;br&gt;Appelle le MS de query pour ajouter la vidéo après conversion, compression, etc." vertex="1">
+          <mxGeometry height="300" width="160" x="840" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ms_reco" parent="1" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;spacingTop=10;fillColor=default;strokeColor=default;align=center;fontFamily=Helvetica;fontSize=12;fontColor=default;" value="&lt;b&gt;Recommandation&lt;/b&gt;&lt;br&gt;&lt;br&gt;Recommandations simples pour la landing page&lt;br&gt;&lt;br&gt;Lit le catalogue (query) et les favoris (gestion utilisateur)&lt;br&gt;&lt;br&gt;&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(255, 0, 0));&quot;&gt;Pas de DB propre ?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="300" width="160" x="1040" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="gateway" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;b&gt;API Gateway&lt;/b&gt;" vertex="1">
+          <mxGeometry height="80" width="1200" x="20" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;b&gt;Frontend&lt;/b&gt;" vertex="1">
+          <mxGeometry height="100" width="360" x="440" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="ms_login" style="endArrow=classic;startArrow=classic;html=1;" target="db_login">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="ms_query" style="endArrow=classic;startArrow=classic;html=1;" target="db_query">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="ms_user" style="endArrow=classic;startArrow=classic;html=1;" target="db_user">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g1" edge="1" parent="1" source="gateway" style="endArrow=classic;startArrow=classic;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ms_login">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="g2" edge="1" parent="1" source="gateway" style="endArrow=classic;startArrow=classic;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ms_query">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="g3" edge="1" parent="1" source="gateway" style="endArrow=classic;startArrow=classic;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ms_user">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="520" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="g4" edge="1" parent="1" source="gateway" style="endArrow=classic;startArrow=classic;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ms_stream">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="720" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="g6" edge="1" parent="1" source="gateway" style="endArrow=classic;startArrow=classic;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ms_reco">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1120" y="600" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="f1" edge="1" parent="1" source="frontend" style="endArrow=classic;startArrow=classic;html=1;" target="gateway">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="qGJ1OAWZM4OoWC1BvbeK-1" edge="1" parent="1" source="gateway" style="endArrow=classic;startArrow=classic;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ms_upload">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1020" y="620" as="sourcePoint" />
+            <mxPoint x="1353" y="540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="qGJ1OAWZM4OoWC1BvbeK-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fontColor=#999999;strokeColor=#999999;" value="&lt;strike&gt;Pas de DB&lt;/strike&gt;" vertex="1">
+          <mxGeometry height="50" width="160" x="840" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="qGJ1OAWZM4OoWC1BvbeK-4" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;align=left;spacingLeft=10;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;DB&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;- ? ? ?&lt;div&gt;(on a-t-on besoin ?)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="160" x="1040" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="qGJ1OAWZM4OoWC1BvbeK-5" edge="1" parent="1" source="ms_reco" style="endArrow=classic;startArrow=classic;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" target="qGJ1OAWZM4OoWC1BvbeK-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1119.7" y="220" as="sourcePoint" />
+            <mxPoint x="1119.7" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
