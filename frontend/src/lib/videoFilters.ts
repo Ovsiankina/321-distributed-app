@@ -1,4 +1,4 @@
-import type { Video } from '../data/videos'
+import type { Video } from './types'
 
 export function filterVideosByTag(videos: Video[], tag: string | null): Video[] {
   if (!tag) return videos

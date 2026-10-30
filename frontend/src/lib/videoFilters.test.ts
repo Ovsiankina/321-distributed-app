@@ -1,11 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import type { Video } from '../data/videos'
+import type { Video } from './types'
 import { filterVideosByTag, getAllTags } from './videoFilters'
 
+function video(id: string, tags: string[]): Video {
+  return {
+    id,
+    title: id,
+    description: '',
+    tags,
+    duration_seconds: 60,
+    thumbnail_url: '',
+    qualities: [],
+    featured: false,
+    subtitle_langs: [],
+    stream_modes: [],
+    subtitle_formats: [],
+  }
+}
+
 const videos: Video[] = [
-  { id: '1', title: 'A', thumbnail: '', duration: '1:00', tags: ['tech', 'science'] },
-  { id: '2', title: 'B', thumbnail: '', duration: '2:00', tags: ['musique'] },
-  { id: '3', title: 'C', thumbnail: '', duration: '3:00', tags: ['tech'] },
+  video('1', ['tech', 'science']),
+  video('2', ['musique']),
+  video('3', ['tech']),
 ]
 
 describe('filterVideosByTag', () => {
