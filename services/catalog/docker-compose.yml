@@ -1,0 +1,36 @@
+services:
+  catalog-db:
+    image: mariadb:11
+    environment:
+      MARIADB_USER: catalog
+      MARIADB_PASSWORD: catalog
+      MARIADB_DATABASE: catalog
+      MARIADB_ROOT_PASSWORD: catalog-root
+    volumes:
+      - catalog-mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  catalog:
+    build: .
+    ports:
+      - "8002:8002"
+    environment:
+      CATALOG_DATABASE_URL: mariadb+pymysql://catalog:catalog@catalog-db:3306/catalog
+      CATALOG_DATA_DIR: /data/catalog
+      CATALOG_VIDEOS_DIR: /data/videos
+      CATALOG_SUBTITLES_DIR: /data/subtitles
+    volumes:
+      - ../../datasets/videos:/data/videos:ro
+      - ../../datasets/subtitles:/data/subtitles:ro
+      - catalog-thumbs:/data/catalog
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+
+volumes:
+  catalog-mariadb-data:
+  catalog-thumbs:

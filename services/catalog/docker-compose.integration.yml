@@ -1,0 +1,6 @@
+# Surcharge pour tests d'intégration MariaDB depuis l'hôte (pytest).
+# Usage : docker compose -f docker-compose.yml -f docker-compose.integration.yml ...
+services:
+  catalog-db:
+    ports:
+      - "127.0.0.1:3310:3306"

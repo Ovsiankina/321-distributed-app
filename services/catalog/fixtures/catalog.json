@@ -1,0 +1,418 @@
+{
+  "count": 10,
+  "videos": [
+    {
+      "id": "WQBLPYToLME",
+      "title": "L'attaque informatique la plus sophistiquée de l'Histoire",
+      "channel": "Micode",
+      "channel_id": "UCYnvxJ-PKiGXo_tYXpWAC-w",
+      "uploader_id": "@Micode",
+      "channel_follower_count": 2000000,
+      "upload_date_iso": "2024-11-05",
+      "published_at": "2024-11-05T17:35:26+00:00",
+      "duration_string": "29:01",
+      "view_count": 3064004,
+      "like_count": 88628,
+      "comment_count": 1700,
+      "categories": [
+        "Science & Technology"
+      ],
+      "language": "fr",
+      "tags": [],
+      "description": "L'histoire du virus informatique le plus destructeur jamais créé.\n\n➤ Découvrir Odoo : https://www.odoo.com/r/aJOm\nLa première application est gratuite à vie\n\n🎧 Nos vidéos sont aussi disponibles en podcast !\nApple Podcast : https://podcasts.apple.com/fr/podcast/underscore/id1556250107\nSpotify : https://open.spotify.com/show/1sz1NhoHqbpXbzNlpOnFoz\nDeezer : https://www.deezer.com/fr/show/2379352\n(et les autres plateformes)\n\nÉcriture : Matthieu Lambda\nMontage : @Selgy\nRéalisation : Michaël de Marliave\nDirecteur de Production : Arthur della Faille",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=WQBLPYToLME"
+    },
+    {
+      "id": "KCgseiMtnuc",
+      "title": "Comment hacker un complexe nucléaire ?",
+      "channel": "Sylvqin",
+      "channel_id": "UCseGV3amBLISlIOMQodPfVQ",
+      "uploader_id": "@Sylvqin",
+      "channel_follower_count": 557000,
+      "upload_date_iso": "2024-11-18",
+      "published_at": "2024-11-18T17:31:58+00:00",
+      "duration_string": "37:55",
+      "view_count": 888506,
+      "like_count": 28683,
+      "comment_count": 835,
+      "categories": [
+        "Education"
+      ],
+      "language": "fr-FR",
+      "tags": [
+        "stuxnet",
+        "hacker",
+        "piratage",
+        "pirate",
+        "hack",
+        "stux net",
+        "nucléaire"
+      ],
+      "description": "Vidéo en collaboration commerciale avec YouTube.\nÇa devait être l’une des opérations les plus secrètes : Stuxnet, le ver informatique qui ciblait un complexe nucléaire iranien entièrement coupé du monde. Et pourtant, ce malware a échappé à ses créateurs, et il a fini par se répandre bien au-delà des murs de sa cible. \n\nPetite correction : par abus de langage on a plusieurs fois utilisé le terme \"centrales nucléaires\", il s'agit bien de \"complexes nucléaires\" comme on l'a plus souvent dit, qui sont les fameux centres d'enrichissement d'uranium notamment.\n\nPOUR NOUS SOUTENIR : https://patreon.com/Sylvqin | https://fr.tipeee.com/sylvqin\nNOTRE DISCORD : https://discord.gg/p5Ywq7mCV3  \n\nEn échange, on vous propose une offre inégalée : \n- un petit podcast sur les vidéos qui sont sorties avec des anecdotes, un point sur les sorties à venir, et du papotage absolument exclusif et fascinant. (quand on a le temps)\n- les vidéos en avant-première (quand on peut on ne promet rien hein mais on va essayer)\n- un accès à une partie privée sur le Discord \n\nCo-écrit comme d'hab avec Jules le sang : http://twitter.com/julesintel \nChaîne secondaire :  @administrateur \nTwitter : http://twitter.com/sylvqin \nTwitch : http://twitch.tv/sylvqin\nTikTok: https://www.tiktok.com/@sylvq1\n\nNOTRE PODCAST : \nSpotify : https://open.spotify.com/show/1h5UsM31pWRQB0ukt5NWGg\nApple : https://podcasts.apple.com/fr/podcast/sylvqin/id1814629052 | \nDeezer : https://www.deezer.com/fr/show/1001885851\n\n\nMusiques :\nStevia Sphere https://steviasphere.bandcamp.com/\nAudionetwork \n\nSources : \nhttp://www.nonproliferation.org/ \nhttp://docs.broadcom.com/doc/security-response-w32-stuxnet-dossier-11-en \nhttp://eugene.kaspersky.com/2011/11/02/the-man-who-found-stuxnet-sergey-ulasen-in-the-spotlight/ \nhttp://nsarchive.gwu.edu/document/21440-document-44\nhttp://securityanddefence.pl/Operation-Olympic-Games-nCyber-sabotage-as-a-tool-of-American-nintelligence-aimed,121974,0,2.html \nhttp://web.archive.org/web/20110114195758/http://mirror.wikileaks.info/wiki/Serious_nuclear_accident_may_lay_behind_Iranian_nuke_chief's_mystery_resignation/ \nhttps://web.archive.org/web/20230825143606/https://www.wired.com/2014/11/countdown-to-zero-day-stuxnet/ \nhttps://arstechnica.com/tech-policy/2011/07/how-digital-detectives-deciphered-stuxnet-the-most-menacing-malware-in-history/ \nhttps://darknetdiaries.com/episode/29/ \nhttps://www.bbc.com/news/world-middle-east-56734657 \nhttps://www.langner.com/2011/02/intercept-infect-infiltrate/ \nhttps://www.langner.com/wp-content/uploads/2017/03/to-kill-a-centrifuge.pdf \nhttps://www.newsweek.com/obamas-dangerous-game-iran-65711 \nhttps://www.nytimes.com/2009/01/11/washington/11iran.html?pagewanted=all&_r=0 \nhttps://www.nytimes.com/2012/06/01/world/middleeast/obama-ordered-wave-of-cyberattacks-against-iran.html \nhttps://www.reuters.com/article/us-usa-northkorea-stuxnet-idUSKBN0OE2DM20150529 \nhttps://www.volkskrant.nl/nieuws-achtergrond/aivd-speelde-cruciale-rol-bij-sabotage-kernprogramma-iran~ba24df9f \nhttps://www.wired.com/images_blogs/threatlevel/2010/11/w32_stuxnet_dossier.pdf \nhttps://www.c-span.org/video/?306486-1/jobs-economy \nhttps://www.youtube.com/watch?v=CS01Hmjv1pQ \nhttps://www.youtube.com/watch?v=DDH4m6M-ZIU \nhttps://www.youtube.com/watch?v=Joc0iTX9dyQ \nhttps://www.youtube.com/watch?v=zBjmm48zwQU \nhttps://youtu.be/Joc0iTX9dyQ?si=QpkCO2UOf2XklP4L \nZero Days (2016), Alex Gibney",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=KCgseiMtnuc"
+    },
+    {
+      "id": "R2B2QetWGag",
+      "title": "Le monde dépend d’un langage informatique que plus personne ne connaît",
+      "channel": "Underscore_",
+      "channel_id": "UCWedHS9qKebauVIK2J7383g",
+      "uploader_id": "@Underscore_",
+      "channel_follower_count": 965000,
+      "upload_date_iso": "2025-03-03",
+      "published_at": "2025-03-03T13:00:40+00:00",
+      "duration_string": "29:49",
+      "view_count": 1351227,
+      "like_count": 32896,
+      "comment_count": 2600,
+      "categories": [
+        "Science & Technology"
+      ],
+      "language": "fr-FR",
+      "tags": [],
+      "description": "Le monde dépend du COBOL, un langage informatique vieux de 70 ans que plus personne ne connaît.\n\n➤ Découvrir l'offre de Hostinger : https://www.hostg.xyz/SHH5V\nUtilisez le code promo UNDERSCORE\n\n🎧 Nos vidéos sont aussi disponibles en podcast !\nApple Podcast : https://podcasts.apple.com/fr/podcast/underscore/id1556250107\nSpotify : https://open.spotify.com/show/1sz1NhoHqbpXbzNlpOnFoz\nDeezer : https://www.deezer.com/fr/show/2379352\n(et les autres plateformes)\n\n👀 Vidéos recommandées :\n- La trouvaille scandaleuse d'un chercheur sur Windows 11 : https://youtu.be/SlIZxdeoWDY\n- La vidéo sur n8n : https://youtu.be/zNFUeiRlAPA\n\nProducteur : Michaël de Marliave\nRédacteur en chef : Matthieu Lambda\nEn plateau : Michaël de Marliave, Matthieu Lambda et Gaétan Roelens\nMontage : Vincent Carbonneau\nDirecteur de production : Charles-Antoine d'Adhémar\nRégisseur : Till de Roquefeuil",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=R2B2QetWGag"
+    },
+    {
+      "id": "UXielWVovBo",
+      "title": "Saddam Hussein vs l'Ayatollah Khomeini : la guerre Iran-Irak",
+      "channel": "Questions d'Histoire",
+      "channel_id": "UCCGRtSqLfljpX9mzCYDsQIg",
+      "uploader_id": "@QuestionsdHistoire",
+      "channel_follower_count": 677000,
+      "upload_date_iso": "2025-09-09",
+      "published_at": "2025-09-09T16:01:00+00:00",
+      "duration_string": "22:38",
+      "view_count": 878418,
+      "like_count": 16191,
+      "comment_count": 771,
+      "categories": [
+        "Education"
+      ],
+      "language": "fr",
+      "tags": [
+        "questionhistoire",
+        "questionshistoire",
+        "questiondhistoire",
+        "dochistoire",
+        "histoire",
+        "reportagehistoire",
+        "guerre iran irak",
+        "iran",
+        "irak",
+        "saddam hussein",
+        "khomeini",
+        "bassora",
+        "khorramshahr",
+        "péninsule de fao",
+        "golfe persique",
+        "guerre du golfe",
+        "états unis",
+        "usa",
+        "moyen orient",
+        "guerre froide",
+        "pasdarans",
+        "bassidjis",
+        "armes chimiques",
+        "guerre des tankers",
+        "guerre des villes",
+        "pétrole",
+        "histoire contemporaine",
+        "conflit moyen orient",
+        "arrestation saddam",
+        "guerre saddam",
+        "doc histoire"
+      ],
+      "description": "👉 Profitez de 2 offres exclusives avec Holy en suivant ce lien : https://fr.weareholy.com/QUESTIONSDHISTOIRE/youtube\n➡️QUESTIONSDHISTOIRE5 : 5 € de réduction sur toutes les premières commandes dès 14,99€ d’achat\n➡️ QUESTIONSDHISTOIRE : 10% de réduction sur toutes les commandes des clients récurrents\n\n++++++++++++++++++++ \nEn septembre 1980, Saddam Hussein lance une grande offensive contre son voisin iranien. Ses motivations sont nombreuses : s’afficher comme leader du monde sunnite au Moyen-Orient, annexer une partie du Khouzistan iranien, contrôler un fleuve qui mène au Golfe persique, et surtout, contenir la poussée révolutionnaire chiite iranienne, dont le nouveau régime, se montre belliqueux. Saddam Hussein pense remporter une victoire rapide. Le conflit va durer 8 ans et profondément bouleverser les équilibres dans cette région du monde...\n\n++++++++++++++++++++ \n🎧 Version Podcast 🎧\n➡️ https://open.spotify.com/episode/1oLzVLfvySg30VDCiP66Ka?si=txFoA0WnQL60oqbq1McKCg\n\n++++++++++++++++++++ \n➤Tipeee : http://bit.ly/2vd6Om1 \n➤Ulule : https://fr.ulule.com/questions-d-histoire/\n➤TikTok : https://www.tiktok.com/@questions_dhistoire\n➤Instagram : https://www.instagram.com/questionsdhistoire \n➤Facebook : https://www.facebook.com/questiondhistoire/ \n➤Twitter : https://twitter.com/questiondhisto1 \n➤Youtube : http://bit.ly/1WsHn5a\n\n++++++++++++++++++++ \n🔎 Sources bibliographiques : \n\n- Pierre Razoux, La guerre Iran-Irak (1980-1988), Tempus Perrin, 2017\n- Yann Richard, L’Iran : de 1800 à nos jours, Flammarion, 2023\n- Mohammad-Reza Djalili , Histoire de l’Iran contemporain, La Découverte, 2024\n- Jean-Paul Roux, Histoire de l’Iran et des Iraniens : des origines à nos jours, Fayard, 2006\n\n++++++++++++++++++++ \n🌐 Liens Internet : \n\n- Du cadavre au martyr. La représentation de la mort des combattants dans la presse iranienne lors de la guerre Iran-Irak (1980-1988) : https://journals.openedition.org/questionsdecommunication/1978\n- Saddam Hussein et la débâcle triomphante : https://journals.openedition.org/remmm/3401?lang=en\n\n++++++++++++++++++++ \n🎶 Crédit musiques :\n\n- Alexandre Desplat – Syriana OST\n- John Williams - JFK OST\n- Alberto Iglesias - Che OST\n\n- Bruitages : Freesound.org\n\n++++++++++++++++++++ \n🎥 Crédit vidéo :\n\n- La longue guerre : Israël-Iran (2018) : https://www.imdb.com/fr/title/tt11307446/\n- Dictateurs, mode d’emploi (2018) : https://www.imdb.com/fr/title/tt7699414\n- Saddam vs the Ayatollah (2012) : https://www.imdb.com/fr/title/tt2370029\n\n++++++++++++++++++++ \nMerci d’avoir visionné !\n\n00:00 - Introduction \n01:26 – Partenariat Holy\n03:33 – 1979 : année charnière \n07:15 – Le déclenchement de la guerre\n10:05 – La résistance iranienne \n12:49 – La contre-offensive de l’Iran\n14:55 – « Guerre des tankers » & « Guerre des villes »\n16:20 – L’affaire Iran-Contra\n17:37 – Vers la fin du conflit\n20:24 – Bilan\n21:56 – Outro",
+      "chapter_count": 11,
+      "chapters": [
+        {
+          "title": "Introduction",
+          "start_time": 0
+        },
+        {
+          "title": "Partenariat Holy",
+          "start_time": 86
+        },
+        {
+          "title": "1979 : année charnière",
+          "start_time": 213
+        },
+        {
+          "title": "Le déclenchement de la guerre",
+          "start_time": 435
+        },
+        {
+          "title": "La résistance iranienne",
+          "start_time": 605
+        },
+        {
+          "title": "La contre-offensive de l’Iran",
+          "start_time": 769
+        },
+        {
+          "title": "« Guerre des tankers » & « Guerre des villes »",
+          "start_time": 895
+        },
+        {
+          "title": "L’affaire Iran-Contra",
+          "start_time": 980
+        },
+        {
+          "title": "Vers la fin du conflit",
+          "start_time": 1057
+        },
+        {
+          "title": "Bilan",
+          "start_time": 1224
+        },
+        {
+          "title": "Outro",
+          "start_time": 1316
+        }
+      ],
+      "webpage_url": "https://www.youtube.com/watch?v=UXielWVovBo"
+    },
+    {
+      "id": "o-U9Wa4WvJI",
+      "title": "La stratégie inavouable des géants de l'IA",
+      "channel": "Underscore_",
+      "channel_id": "UCWedHS9qKebauVIK2J7383g",
+      "uploader_id": "@Underscore_",
+      "channel_follower_count": 965000,
+      "upload_date_iso": "2026-01-12",
+      "published_at": "2026-01-12T15:53:27+00:00",
+      "duration_string": "30:47",
+      "view_count": 504862,
+      "like_count": 15332,
+      "comment_count": 704,
+      "categories": [
+        "Science & Technology"
+      ],
+      "language": "fr",
+      "tags": [],
+      "description": "Dans l'IA, celui qui contrôle les données contrôle le jeu.\n\n➤ Essayer Mammouth AI : http://mammouth.ai\nMa vidéo avec le cofondateur de Mammouth IA : https://youtu.be/MdrqKnNHRFs\nEt si vous voulez creuser sur la privacy de Mammouth IA : https://info.mammouth.ai/fr/docs/about-privacy/\nMerci à Mammouth AI pour cette collaboration commerciale.\n\n📕 Resources :\n- https://www.linkedin.com/in/jlqueguiner/\n\n🎧 Nos vidéos sont aussi disponibles en podcast !\nApple Podcast : https://podcasts.apple.com/fr/podcast/underscore/id1556250107\nSpotify : https://open.spotify.com/show/1sz1NhoHqbpXbzNlpOnFoz\nDeezer : https://www.deezer.com/fr/show/2379352\n(et les autres plateformes)\n\n👀 Vidéos recommandées : https://youtu.be/bzs0wFP_6ck?si=6UdSouqhot3hN9g5\n\nProducteur : Michaël de Marliave\nRédacteur en chef : Matthieu Lambda\nRéalisateur : Vincent Carbonneau\nMontage : Annette Brion\nEn plateau : Michaël de Marliave, Matthieu Lambda, et Jean-Louis Quéguiner (CEO de Gladia)\nDirecteur commercial : Charles-Antoine d'Adhémar",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=o-U9Wa4WvJI"
+    },
+    {
+      "id": "4xq6bVbS-Pw",
+      "title": "La Fabrique à Idiots",
+      "channel": "Micode",
+      "channel_id": "UCYnvxJ-PKiGXo_tYXpWAC-w",
+      "uploader_id": "@Micode",
+      "channel_follower_count": 2000000,
+      "upload_date_iso": "2026-01-15",
+      "published_at": "2026-01-15T13:00:20+00:00",
+      "duration_string": "38:23",
+      "view_count": 3675817,
+      "like_count": 180570,
+      "comment_count": 8700,
+      "categories": [
+        "Science & Technology"
+      ],
+      "language": "fr",
+      "tags": [],
+      "description": "L'IA ne va pas nous remplacer : elle va nous rendre idiots.\n\n➤  Découvrir l'offre d'UBIGI : https://rebrand.ly/UbigixMicode\nEt profitez de -10% avec le code : MICODE\nMerci à Ubigi pour cette collaboration commerciale. \n\n🎧 Nos vidéos sont aussi disponibles en podcast !\nApple Podcast : https://podcasts.apple.com/fr/podcast/underscore/id1556250107\nSpotify : https://open.spotify.com/show/1sz1NhoHqbpXbzNlpOnFoz\nDeezer : https://www.deezer.com/fr/show/2379352\n(et les autres plateformes)\n\n📕 Ressources :\n- https://docs.google.com/document/d/e/2PACX-1vQ2kCPwZRa7XTtwU-GN_4qHb7HkrHDWGc3gtOaJTH7RPu08quwrEOMStsUvf_-UBfj9g_xu-sILN56w/pub\n\nProducteur : Michaël de Marliave\nRéalisateur : Thibault Fotré\nAuteur : Frédéric Garcia\nChef monteur : Tom Serin\nMonteur : Jean Lanot\nMonteur et documentaliste : Vincent Carbonneau\nMotion designer : Léo Tixador \nDirecteur commercial : Charles-Antoine d'Adhémar\nDirecteur de production : Thibault Fotré",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=4xq6bVbS-Pw"
+    },
+    {
+      "id": "3Z5uvwsCi6s",
+      "title": "World Models : l’IA peut-elle comprendre le monde ? (Atlas, World Labs)",
+      "channel": "Defend OFF",
+      "channel_id": "UC_WDjhOlU50NUUMwuJid5KA",
+      "uploader_id": "@defendOFF",
+      "channel_follower_count": 6910,
+      "upload_date_iso": "2026-09-02",
+      "published_at": "2026-09-02T18:46:36+00:00",
+      "duration_string": "30:10",
+      "view_count": 13418,
+      "like_count": 211,
+      "comment_count": 28,
+      "categories": [
+        "Science & Technology"
+      ],
+      "language": "fr-FR",
+      "tags": [],
+      "description": "Les world models sont-ils la prochaine étape de l’IA ? Je découvre les démonstrations d’Atlas, le modèle de World Labs, et leur intérêt pour la création 3D et l’entraînement des robots.\n\nContexte spatial, cohérence d’une scène, reconstruction 3D, simulation et rapports avec les LLM : on explore les promesses et les questions encore ouvertes. Les exemples de Mars, de la VR et du secours sont des usages futurs envisagés pendant le direct, pas des applications démontrées ici.\n\nReplay du 2 septembre 2026, remonté pour Defend OFF : prises ratées, coupure micro et lectures audio parasites retirées. Les démonstrations proviennent des pages et vidéos commentées ; il ne s’agit pas d’un benchmark indépendant d’Atlas.\n\nCHAPITRES\n00:00 Comprendre les world models\n01:50 Atlas : la démonstration\n03:10 Pourquoi la robotique a besoin de données\n05:18 Ce que promet Atlas\n08:01 Nouvelles vues, hallucinations et 3D\n11:43 Contrôle de caméra et mémoire spatiale\n14:44 Simuler les robots et leur environnement\n16:22 Mars et secours : les usages imaginés\n20:26 Potentiel et risques\n21:36 Pourquoi Fei-Fei Li mise sur les world models\n23:38 Le langage et le monde physique\n25:13 LLM, vidéo et intelligence spatiale\n28:59 Dernière démo et conclusion\n\nSOURCES ET DÉMONSTRATIONS\nAtlas — présentation officielle : https://www.worldlabs.ai/blog/atlas\nWorld Labs : https://www.worldlabs.ai/\nMarble : https://marble.worldlabs.ai/\nExtrait a16z commenté : https://x.com/a16z/status/2094855553264832917\n\nAbonnez-vous à Defend OFF pour les prochains replays et dites-moi en commentaire quel usage vous paraît le plus intéressant.\n\n#WorldModels #WorldLabs #IntelligenceArtificielle",
+      "chapter_count": 13,
+      "chapters": [
+        {
+          "title": "Comprendre les world models",
+          "start_time": 0
+        },
+        {
+          "title": "Atlas : la démonstration",
+          "start_time": 110
+        },
+        {
+          "title": "Pourquoi la robotique a besoin de données",
+          "start_time": 190
+        },
+        {
+          "title": "Ce que promet Atlas",
+          "start_time": 318
+        },
+        {
+          "title": "Nouvelles vues, hallucinations et 3D",
+          "start_time": 481
+        },
+        {
+          "title": "Contrôle de caméra et mémoire spatiale",
+          "start_time": 703
+        },
+        {
+          "title": "Simuler les robots et leur environnement",
+          "start_time": 884
+        },
+        {
+          "title": "Mars et secours : les usages imaginés",
+          "start_time": 982
+        },
+        {
+          "title": "Potentiel et risques",
+          "start_time": 1226
+        },
+        {
+          "title": "Pourquoi Fei-Fei Li mise sur les world models",
+          "start_time": 1296
+        },
+        {
+          "title": "Le langage et le monde physique",
+          "start_time": 1418
+        },
+        {
+          "title": "LLM, vidéo et intelligence spatiale",
+          "start_time": 1513
+        },
+        {
+          "title": "Dernière démo et conclusion",
+          "start_time": 1739
+        }
+      ],
+      "webpage_url": "https://www.youtube.com/watch?v=3Z5uvwsCi6s"
+    },
+    {
+      "id": "e7jw5PL3o5A",
+      "title": "Comment frauder la Sécu ?",
+      "channel": "Micode",
+      "channel_id": "UCYnvxJ-PKiGXo_tYXpWAC-w",
+      "uploader_id": "@Micode",
+      "channel_follower_count": 2000000,
+      "upload_date_iso": "2026-09-27",
+      "published_at": "2026-09-27T11:00:21+00:00",
+      "duration_string": "34:31",
+      "view_count": 3178746,
+      "like_count": 88709,
+      "comment_count": 2900,
+      "categories": [
+        "Science & Technology"
+      ],
+      "language": "fr",
+      "tags": [],
+      "description": "Ils détournent des millions à la Sécu sans que personne ne le voie.\n\n➤  Essayer Mammouth AI : http://mammouth.ai/\nMa vidéo avec le cofondateur de Mammouth AI : https://youtu.be/MdrqKnNHRFs\nMerci à Mammouth AI pour son soutien et cette collaboration commerciale.\n\n🎧 Nos vidéos sont aussi disponibles en podcast !\nApple Podcast : https://podcasts.apple.com/fr/podcast/underscore/id1556250107\nSpotify : https://open.spotify.com/show/1sz1NhoHqbpXbzNlpOnFoz\nDeezer : https://www.deezer.com/fr/show/2379352\n(et les autres plateformes)\n\n📕 Ressources :\n- https://docs.google.com/document/d/e/2PACX-1vTkZGaggrx6y4LYA0sjch3qdtfjBtnRW_G3WafyC7I3yB2jYfaZWPzE3nl-opVHYhSBam1zwDmAEeNx/pub\n\nSi vous avez des idées d'enquête : enquetes@micode.fr\n\nProducteur : Michaël de Marliave\nRéalisateur : Thibault Fotré\nAuteur : Louis Leroy\nEnquête avec le concours de Cybermoustache \nMontage : Adrien Olar\nDocumentaliste : Vincent Carbonneau\nMotion designer : Arthur Detrait\nMixage sonore : Noha Joubert\nDirecteur commercial : Charles-Antoine d'Adhémar\nStratégie éditoriale : Antoine Tondu",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=e7jw5PL3o5A"
+    },
+    {
+      "id": "o8mX_qZAD08",
+      "title": "La technologie la plus effrayante au monde",
+      "channel": "TRY",
+      "channel_id": "UCdV6JBe40vqPQOsG4boS5zQ",
+      "uploader_id": "@JusteTRY",
+      "channel_follower_count": 181000,
+      "upload_date_iso": "2026-10-02",
+      "published_at": "2026-10-02T15:00:24+00:00",
+      "duration_string": "28:01",
+      "view_count": 298065,
+      "like_count": 6818,
+      "comment_count": 189,
+      "categories": [
+        "Education"
+      ],
+      "language": "fr-FR",
+      "tags": [],
+      "description": "🪳\n.\n🔥 Merci LegalPlace ! Pour lancer vos projets et créer votre entreprise, c'est par ici : https://www.legalplace.fr/\n.\n📸 INSTA : https://www.instagram.com/juste_try/ \n🔥 Rejoins le discord :  https://discord.gg/pHebMgv9qh\n🎬 Mon Twitch : https://www.twitch.tv/justetry \n🐦:  https://x.com/JusteTry\n.\nDes cafards équipés pour espionner,  des électrodes capables de dévier nos mouvements. Et une frontière de plus en plus trouble entre le vivant et la machine. Des laboratoires aux applications militaires, et des  : jusqu’où peut-on prendre le contrôle d’un corps ?\n.\nSources :\nhttps://justpaste.it/gteqv/pdf\n-\nTout a été fait par mes petites mains. (montage/3D/Motion/écriture)\n-\nSi vous êtes chercheurs ou dans un domaine scientifique, n'hésitez pas à rejoindre le discord,\nje cherche en permanence des sujets, ou des personnes du milieu.\n—",
+      "chapter_count": 0,
+      "chapters": [],
+      "webpage_url": "https://www.youtube.com/watch?v=o8mX_qZAD08"
+    },
+    {
+      "id": "rHX3UTX5iaQ",
+      "title": "La Chute du dernier dirigeant de l'URSS : Mikhaïl Gorbatchev",
+      "channel": "La Folle Histoire",
+      "channel_id": "UCBmGPY1gJ4XnXfek849BjTA",
+      "uploader_id": "@lafollehistoire",
+      "channel_follower_count": 1100000,
+      "upload_date_iso": "2026-10-13",
+      "published_at": "2026-10-13T16:00:02+00:00",
+      "duration_string": "43:43",
+      "view_count": 334571,
+      "like_count": 8089,
+      "comment_count": 351,
+      "categories": [
+        "Education"
+      ],
+      "language": "fr",
+      "tags": [
+        "La Folle Histoire",
+        "Histoire",
+        "Mikhaïl Gorbatchev",
+        "Gorbatchev",
+        "URSS",
+        "Union Soviétique",
+        "Chute",
+        "Chute urss",
+        "chute union soviétique",
+        "tchernobyl",
+        "chute du mur de berlin",
+        "documentaire",
+        "fin urss",
+        "Union Républiques Socialistes Soviétiques",
+        "démission gorbatchev"
+      ],
+      "description": "Simplifiez-vous la vie pour créer votre entreprise ! \n15% de réduction sur Legal Place pour les formules standard et express avec mon code FOLLEHISTOIRE https://go.legalplace.fr/FOLLEHISTOIRE\n\nPour certain, il est le “fossoyeur” de l’URSS… et pour d’autres, il est celui qui a mis fin à la guerre froide sans déclencher de guerre thermonucléaire. \nMais qui était vraiment Mikhael Gorbatchev ? \nÉtait-il vraiment en capacité de sauver l’Union Soviétique, ou était-elle déjà condamnée ? \n\n🔎 Pour me suivre : \nInstagram:  https://www.instagram.com/lafollehistoire/\nTikTok: https://www.tiktok.com/@lafollehistoire\nX (twitter):  https://twitter.com/lafollehistoire\nTwitch:  https://www.twitch.tv/lafollehistoire_\n\n🎧La Folle Histoire est désormais disponible en podcast ! \nSpotify: https://t.co/mrqvdXZUY4\nDeezer: https://t.co/mtbBUqqrWT\nApple Podcasts: https://t.co/rr7gDRfKai\n\n🖊️ Crédits:\nRéalisation: Thibault Bourdin\nRecherches et écriture: Thibault Bourdin, Charlotte Herpin\nRecherche archives: Thibault Bourdin\nMontage : Thomas Soubiran\nMontage sponsor: Werner Riboulot \nCartes: Explicit Crea\nMiniature: @cyrilpsd\nMusique: Audionetwork et Tom Fox\n\n\n📚 Sources:\nBibliographie\nDullin, Sabine. Histoire de l’URSS. 3e éd. Repères 150. La Découverte, 2008.\nGraziosi, Andrea, et Jérôme Nicolas. Histoire de l’URSS. Nouvelle Clio. Presses universitaires de France, 2010.\nHalile, Zacharia. « Voir la Russie post soviétique par l’oeil des journaux télévisés français ». Rennes 2, 2024.\nKozovoï, Andreï. La chute de l’Union soviétique: 1982-1991. Tallandier, 2011.\nKozovoï, Andreï. La chute de l’Union soviétique: 1982-1991, 2023. Nouvelle éd. revue et Enrichie. Tempus 912. Perrin, 2023.\nLecomte, Bernard. Gorbatchev. Perrin, 2014.\nNérard, François-Xavier, Marie-Pierre Rey, et Cyrille Suss. Atlas historique de la Russie: d’Ivan III à Vladimir Poutine. 3e édition. Collection Atlas-mémoires. Éditions Autrement, 2023.\nPérès, Rémi. Chronologie de la Russie au XXe siècle: histoire des faits économiques, politiques et sociaux. Les chronos. Vuibert, 2000.\nSumpf, Alexandre, et Étienne Forestier-Peyrat. La Russie et l’URSS: 1850-1991. Clefs concours. Atlande, 2021.\nTinguy, Anne de, dir. L’effondrement de l’empire soviétique. Organisation internationale et relations internationales, no 42. Bruylant, 1998.\nWerth, Nicolas. Histoire de l’Union soviétique: de l’Empire russe à la Communauté des États indépendants, 1900-1991. 2e éd. mise à jour. Quadrige. PUF, 2021.\nWerth, Nicolas. Histoire de l’URSS. La bibliothèque. Que sais-je ?, 2026.\nWerth, Nicolas. Le cimetière de l’espérance: essais sur l’histoire de l’Union soviétique, 1914-1991. Collection Tempus 748. Perrin, 2019.\n\nPodcast : \nhttps://www.radiofrance.fr/franceculture/podcasts/serie-gorbatchev-02-mars-1931-30-aout-2022-l-homme-de-la-fin-de-l-histoire\n\nhttps://www.radiofrance.fr/franceculture/podcasts/serie-urss-histoire-d-une-chute \n\nChapitres:\n00:00 Introduction\n01:50 LegalPlace \n03:50 Le jeune apparatchik\n08:23 L'agonie de l'URSS\n13:45 Le réformateur\n21:26 La rupture\n30:50 La fin de l'URSS",
+      "chapter_count": 7,
+      "chapters": [
+        {
+          "title": "Introduction",
+          "start_time": 0
+        },
+        {
+          "title": "LegalPlace",
+          "start_time": 110
+        },
+        {
+          "title": "Le jeune apparatchik",
+          "start_time": 230
+        },
+        {
+          "title": "L'agonie de l'URSS",
+          "start_time": 503
+        },
+        {
+          "title": "Le réformateur",
+          "start_time": 825
+        },
+        {
+          "title": "La rupture",
+          "start_time": 1286
+        },
+        {
+          "title": "La fin de l'URSS",
+          "start_time": 1850
+        }
+      ],
+      "webpage_url": "https://www.youtube.com/watch?v=rHX3UTX5iaQ"
+    }
+  ]
+}
