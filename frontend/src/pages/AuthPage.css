@@ -1,0 +1,38 @@
+.auth-form {
+  display: grid;
+  gap: 14px;
+  max-width: 26rem;
+  margin: 32px auto;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+}
+
+.auth-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.auth-form input {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--text);
+}
+
+.auth-form button {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  /* Same as the default button text under color-scheme: dark (index.css); kept for themes without it. */
+  color: white;
+  cursor: pointer;
+}
+
+.auth-form a {
+  color: var(--accent);
+}
