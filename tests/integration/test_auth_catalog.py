@@ -6,32 +6,23 @@ Le catalog ne valide pas les JWT ; le couplage est côté service auth (404 si v
 
 from __future__ import annotations
 
-import httpx
 import pytest
 
+from catalog_health import skip_if_catalog_down
 from http_env import auth_http, catalog_http, register_and_login
 
 pytestmark = pytest.mark.integration
 
 
-def _skip_if_catalog_down(catalog_http: httpx.Client) -> None:
-    try:
-        health = catalog_http.get("/health")
-    except httpx.HTTPError as exc:
-        pytest.skip(f"Catalog injoignable sur {catalog_http.base_url} : {exc}")
-    if health.status_code != 200:
-        pytest.skip(f"Catalog injoignable sur {catalog_http.base_url} : {health.status_code}")
-
-
 def test_catalog_reachable_for_auth_scenarios(catalog_http: httpx.Client):
-    _skip_if_catalog_down(catalog_http)
+    skip_if_catalog_down(catalog_http)
     videos = catalog_http.get("/api/catalog/videos")
     assert videos.status_code == 200
     assert videos.json()["total"] >= 1
 
 
 def test_add_favorite_on_existing_catalog_video(auth_http: httpx.Client, catalog_http: httpx.Client):
-    _skip_if_catalog_down(catalog_http)
+    skip_if_catalog_down(catalog_http)
     token = register_and_login(auth_http)
     video_id = catalog_http.get("/api/catalog/videos").json()["items"][0]["id"]
     response = auth_http.post(
@@ -51,7 +42,7 @@ def test_add_favorite_unknown_video_returns_404(auth_http: httpx.Client):
 
 
 def test_list_favorites_includes_catalog_metadata(auth_http: httpx.Client, catalog_http: httpx.Client):
-    _skip_if_catalog_down(catalog_http)
+    skip_if_catalog_down(catalog_http)
     token = register_and_login(auth_http)
     video_id = catalog_http.get("/api/catalog/videos").json()["items"][0]["id"]
     auth_http.post(

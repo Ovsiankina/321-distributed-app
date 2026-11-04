@@ -1,0 +1,16 @@
+services:
+  upload:
+    build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8003:8003"
+    environment:
+      UPLOAD_DATA_DIR: /data/upload/incoming
+      UPLOAD_JWT_SECRET: dev-upload-jwt-secret
+      UPLOAD_CATALOG_URL: http://host.docker.internal:8002
+    volumes:
+      - upload-incoming:/data/upload/incoming
+
+volumes:
+  upload-incoming:
