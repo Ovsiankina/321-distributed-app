@@ -85,7 +85,7 @@ Une vignette par vidéo au MVP.
 | **Base** | `videos.thumbnail_path` = chemin **relatif** à `CATALOG_DATA_DIR`, ex. `thumbs/{video_id}.jpg` |
 | **API publique** | `thumbnail_url` = `/api/catalog/videos/{id}/thumbnail` (contrat gateway ; pas le chemin disque) |
 
-Génération : au seed, si `{CATALOG_VIDEOS_DIR}/{video_id}.mp4` existe et que le JPEG est absent, `ffmpeg` extrait une image vers le chemin ci-dessus. L'endpoint thumbnail lit le fichier via `thumbnail_path` (ou la convention `thumbs/{id}.jpg`).
+Génération : au seed, si `{CATALOG_VIDEOS_DIR}/{video_id}.mp4` existe et que le JPEG est absent, `ffmpeg` extrait une image vers le chemin ci-dessus. L'appel est borné à 30 secondes. En cas d'échec, d'expiration ou de binaire absent, le fichier partiel est supprimé et la vignette est ignorée. L'endpoint thumbnail lit le fichier via `thumbnail_path` (ou la convention `thumbs/{id}.jpg`).
 
 Pas de BLOB en MariaDB pour les images.
 
@@ -105,14 +105,16 @@ Champs **non** importés au MVP : `channel`, `uploader_id`, `channel_follower_co
 
 ## Politique de seed
 
-Au démarrage (`lifespan` FastAPI) :
+Au démarrage (`lifespan` FastAPI), `sync_catalog_on_startup` prend un verrou fichier exclusif (`fcntl` sur `{CATALOG_DATA_DIR}/.catalog-sync.lock`) puis resynchronise la base. La base n'est pas laissée telle quelle lorsqu'elle contient déjà des lignes. Deux workers du même hôte attendent le verrou au lieu de modifier la base en parallèle.
 
 1. `CREATE TABLE` si besoin (`Base.metadata.create_all`).
 2. Lecture `catalog.json` et `featured.json`.
 3. Upsert des vidéos (dont `channel_id`, `thumbnail_path`), remplacement complet des tags.
 4. Suppression des vidéos absentes du JSON.
-5. Génération optionnelle des JPEG via `ffmpeg`.
+5. Génération optionnelle des JPEG via `ffmpeg` (timeout 30 s).
 
 Re-lancer le service resynchronise la DB avec les fixtures.
+
+Le pool SQLAlchemy MariaDB utilise `pool_pre_ping` : une connexion coupée par un redémarrage de `catalog-db` est écartée avant la prochaine requête. Les tests pytest restent sur SQLite, sans ce réglage.
 
 Évolution possible : migrations versionnées (Alembic) au lieu de `create_all` seul.

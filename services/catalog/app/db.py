@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from .config import CATALOG_DATA_DIR, CATALOG_DATABASE_URL
@@ -10,7 +10,7 @@ CATALOG_DATA_DIR.mkdir(parents=True, exist_ok=True)
 def _engine_kwargs(url: str) -> dict:
     if url.startswith("sqlite"):
         return {"connect_args": {"check_same_thread": False}}
-    return {}
+    return {"pool_pre_ping": True}
 
 
 engine = create_engine(CATALOG_DATABASE_URL, **_engine_kwargs(CATALOG_DATABASE_URL))
@@ -27,3 +27,8 @@ def get_db():
 
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
+
+
+def ping_database() -> None:
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
