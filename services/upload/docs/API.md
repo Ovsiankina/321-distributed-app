@@ -36,7 +36,7 @@ Réponse `200` :
 | Code | Cas (squelette actuel) |
 |------|-------------------------|
 | 401 | Pas de JWT ou JWT invalide |
-| 503 | Catalog injoignable ou `/health` invalide |
+| 503 | Catalog injoignable, `/health` non 200, ou corps qui n'est pas un objet `{"status":"ok","service":"catalog"}` |
 | 400 | Fichier manquant |
 | 415 | `Content-Type` non vidéo |
 | 501 | JWT valide, catalog ON, mais traitement upload non implémenté |

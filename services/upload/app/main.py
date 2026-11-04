@@ -8,9 +8,14 @@ from . import config
 from .routers import upload
 
 
+def prepare_runtime() -> None:
+    config.catalog_timeout_seconds()
+    config.data_dir().mkdir(parents=True, exist_ok=True)
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    config.data_dir().mkdir(parents=True, exist_ok=True)
+    prepare_runtime()
     yield
 
 

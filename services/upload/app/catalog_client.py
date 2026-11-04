@@ -18,5 +18,7 @@ def ensure_catalog_ready() -> None:
         body = response.json()
     except ValueError:
         raise HTTPException(status_code=503, detail="Catalog indisponible")
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=503, detail="Catalog indisponible")
     if body.get("status") != "ok" or body.get("service") != "catalog":
         raise HTTPException(status_code=503, detail="Catalog indisponible")

@@ -7,7 +7,7 @@ router = APIRouter(prefix="/api/upload", tags=["upload"])
 
 
 @router.post("/videos")
-async def upload_video(
+def upload_video(
     _user: dict = Depends(require_authenticated_user),
     file: UploadFile = File(...),
 ):

@@ -2,6 +2,10 @@ import os
 from pathlib import Path
 
 
+class ConfigError(ValueError):
+    """Variable d'environnement illisible."""
+
+
 def data_dir() -> Path:
     return Path(os.environ.get("UPLOAD_DATA_DIR", "/data/upload/incoming"))
 
@@ -19,5 +23,16 @@ def catalog_base_url() -> str:
 
 
 def catalog_timeout_seconds() -> float:
-    raw = os.environ.get("UPLOAD_CATALOG_TIMEOUT_SECONDS", "3.0")
-    return float(raw)
+    name = "UPLOAD_CATALOG_TIMEOUT_SECONDS"
+    raw = os.environ.get(name, "3.0")
+    try:
+        timeout = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise ConfigError(
+            f"{name} doit être un nombre (valeur reçue : {raw!r})"
+        ) from exc
+    if timeout <= 0:
+        raise ConfigError(
+            f"{name} doit être strictement positif (valeur reçue : {raw!r})"
+        )
+    return timeout
