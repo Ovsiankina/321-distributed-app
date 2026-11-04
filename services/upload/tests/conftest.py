@@ -25,8 +25,9 @@ def client(tmp_path, monkeypatch):
 
     _purge_app_modules()
     main = importlib.import_module("app.main")
+    # La route lie le nom à l'import : patcher le module source ne suffit pas.
     monkeypatch.setattr(
-        "app.catalog_client.ensure_catalog_ready",
+        "app.routers.upload.ensure_catalog_ready",
         lambda: None,
     )
     with TestClient(main.app) as test_client:

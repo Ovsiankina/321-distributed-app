@@ -44,6 +44,22 @@ def test_ensure_catalog_ready_raises_503_on_connection_error(mock_client_cls):
     assert exc.value.status_code == 503
 
 
+@pytest.mark.parametrize("payload", [None, [], "ok", 1])
+@patch("app.catalog_client.httpx.Client")
+def test_ensure_catalog_ready_raises_503_on_non_object_body(mock_client_cls, payload):
+    mock_client = MagicMock()
+    mock_client_cls.return_value.__enter__.return_value = mock_client
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = payload
+    mock_client.get.return_value = mock_response
+
+    with pytest.raises(HTTPException) as exc:
+        ensure_catalog_ready()
+    assert exc.value.status_code == 503
+    assert exc.value.detail == "Catalog indisponible"
+
+
 @patch("app.catalog_client.httpx.Client")
 def test_ensure_catalog_ready_raises_503_on_wrong_service_name(mock_client_cls):
     mock_client = MagicMock()

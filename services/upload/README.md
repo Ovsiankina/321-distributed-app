@@ -45,7 +45,7 @@ API sur le port **8003**.
 | `UPLOAD_JWT_SECRET` | `dev-upload-jwt-secret` | Secret HS256 partagé avec le service auth |
 | `UPLOAD_JWT_ALGORITHM` | `HS256` | Algorithme JWT |
 | `UPLOAD_CATALOG_URL` | `http://127.0.0.1:8002` | Base URL du microservice catalog (health avant upload) |
-| `UPLOAD_CATALOG_TIMEOUT_SECONDS` | `3.0` | Timeout HTTP vers le catalog |
+| `UPLOAD_CATALOG_TIMEOUT_SECONDS` | `3.0` | Timeout HTTP vers le catalog. Nombre strictement positif. Une valeur illisible empêche le démarrage. |
 
 ## Intégration multi-services
 

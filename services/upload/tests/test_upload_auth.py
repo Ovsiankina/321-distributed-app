@@ -1,5 +1,13 @@
+import inspect
+
+from app.routers.upload import upload_video
+
 UPLOAD_PATH = "/api/upload/videos"
 SAMPLE_FILE = ("clip.mp4", b"fake", "video/mp4")
+
+
+def test_upload_video_handler_is_sync():
+    assert not inspect.iscoroutinefunction(upload_video)
 
 
 def test_upload_without_token_returns_401(client):
@@ -24,4 +32,4 @@ def test_upload_with_valid_token_is_not_unauthorized(client, auth_headers):
         headers=auth_headers,
         files={"file": SAMPLE_FILE},
     )
-    assert response.status_code != 401
+    assert response.status_code == 501
