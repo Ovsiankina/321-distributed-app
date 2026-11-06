@@ -33,6 +33,11 @@
   margin-top: 16px;
 }
 
+.watch-description {
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
 .watch-tags {
   display: flex;
   flex-wrap: wrap;

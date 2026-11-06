@@ -121,7 +121,7 @@ export function WatchPage() {
       <div className="watch-meta">
         <div>
           <h1>{video.title}</h1>
-          <p>{video.description}</p>
+          <p className="watch-description">{video.description}</p>
           <div className="watch-tags">
             {video.tags.map((tag) => (
               <Link key={tag} className="watch-tag" to={`/?tag=${encodeURIComponent(tag)}`}>
