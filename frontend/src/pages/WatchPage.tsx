@@ -118,47 +118,43 @@ export function WatchPage() {
           </div>
         ) : null}
       </div>
-      <div className="watch-meta">
-        <div>
-          <h1>{video.title}</h1>
-          <p className="watch-description">{video.description}</p>
-          <div className="watch-tags">
-            {video.tags.map((tag) => (
-              <Link key={tag} className="watch-tag" to={`/?tag=${encodeURIComponent(tag)}`}>
-                {tag}
-              </Link>
+      <h1 className="watch-title">{video.title}</h1>
+      <div className="watch-actions">
+        <label>
+          Qualité
+          <select value={quality} onChange={(event) => changeQuality(event.target.value)}>
+            {video.qualities.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
-          </div>
-        </div>
-        <div className="watch-actions">
-          <label>
-            Qualité
-            <select value={quality} onChange={(event) => changeQuality(event.target.value)}>
-              {video.qualities.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Sous-titres
-            <select
-              value={subtitleFormat}
-              onChange={(event) => setSubtitleChoice(event.target.value as SubtitleFormat)}
-            >
-              <option value="off">Off</option>
-              {video.subtitle_formats.map((format) => (
-                <option key={format} value={format}>
-                  {format.toUpperCase()}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="button" onClick={() => void toggleFavorite()}>
-            {user ? (favorite ? 'Retirer des favoris' : 'Ajouter aux favoris') : 'Favori (compte requis)'}
-          </button>
-        </div>
+          </select>
+        </label>
+        <label>
+          Sous-titres
+          <select
+            value={subtitleFormat}
+            onChange={(event) => setSubtitleChoice(event.target.value as SubtitleFormat)}
+          >
+            <option value="off">Off</option>
+            {video.subtitle_formats.map((format) => (
+              <option key={format} value={format}>
+                {format.toUpperCase()}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" onClick={() => void toggleFavorite()}>
+          {user ? (favorite ? 'Retirer des favoris' : 'Ajouter aux favoris') : 'Favori (compte requis)'}
+        </button>
+      </div>
+      <p className="watch-description">{video.description}</p>
+      <div className="watch-tags">
+        {video.tags.map((tag) => (
+          <Link key={tag} className="watch-tag" to={`/?tag=${encodeURIComponent(tag)}`}>
+            {tag}
+          </Link>
+        ))}
       </div>
     </>
   )

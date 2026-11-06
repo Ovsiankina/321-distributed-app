@@ -25,11 +25,7 @@
   pointer-events: none;
 }
 
-.watch-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+.watch-title {
   margin-top: 16px;
 }
 
@@ -54,8 +50,10 @@
 
 .watch-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: end;
   gap: 12px;
+  margin: 12px 0 16px;
 }
 
 .watch-actions label {
@@ -79,14 +77,5 @@
   background: var(--accent);
   /* Same as the default button text under color-scheme: dark (index.css); kept for themes without it. */
   color: white;
-  white-space: nowrap;
   cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .watch-meta,
-  .watch-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
