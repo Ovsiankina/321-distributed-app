@@ -63,7 +63,3 @@ export const api = {
 export function streamUrl(videoId: string, quality: string): string {
   return `/api/stream/${encodeURIComponent(videoId)}?quality=${encodeURIComponent(quality)}`
 }
-
-export function subtitleUrl(videoId: string, lang: string, format: 'vtt' | 'srt'): string {
-  return `/api/subtitles/${encodeURIComponent(videoId)}/${lang}.${format}`
-}

@@ -1,28 +1,9 @@
-.watch-player-wrap {
-  position: relative;
-}
-
 .watch-player {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 12px;
   background: black;
-}
-
-.watch-srt-overlay {
-  position: absolute;
-  left: 50%;
-  bottom: 54px;
-  transform: translateX(-50%);
-  padding: 6px 12px;
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.78);
-  color: white;
-  font-size: 1.05rem;
-  text-align: center;
-  white-space: pre-line;
-  pointer-events: none;
 }
 
 .watch-title {

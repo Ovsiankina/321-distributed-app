@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-import { api, streamUrl, subtitleUrl } from '../lib/api'
-import { activeCue, parseSrt, type Cue } from '../lib/subtitles'
+import { api, streamUrl } from '../lib/api'
 import type { Video } from '../lib/types'
 import './WatchPage.css'
-
-type SubtitleFormat = 'off' | 'vtt' | 'srt'
 
 export function WatchPage() {
   const { videoId } = useParams()
@@ -17,14 +14,8 @@ export function WatchPage() {
   const shouldPlay = useRef(true)
   const [video, setVideo] = useState<Video | null>(null)
   const [quality, setQuality] = useState('720p')
-  const [subtitleChoice, setSubtitleChoice] = useState<SubtitleFormat | null>(null)
-  const [srt, setSrt] = useState<{ videoId: string; cues: Cue[] } | null>(null)
-  const [overlay, setOverlay] = useState<Cue | null>(null)
   const [favorite, setFavorite] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Until the viewer picks one, use the first format the catalog lists for this video.
-  const subtitleFormat = subtitleChoice ?? (video?.subtitle_formats[0] as SubtitleFormat | undefined) ?? 'off'
 
   useEffect(() => {
     if (!videoId) return
@@ -42,14 +33,6 @@ export function WatchPage() {
       .catch(() => undefined)
   }, [user, videoId])
 
-  useEffect(() => {
-    if (!videoId || subtitleFormat !== 'srt') return
-    fetch(subtitleUrl(videoId, 'fr', 'srt'))
-      .then((res) => res.text())
-      .then((raw) => setSrt({ videoId, cues: parseSrt(raw) }))
-      .catch(() => setSrt(null))
-  }, [videoId, subtitleFormat])
-
   function changeQuality(next: string) {
     const el = videoRef.current
     resumeAt.current = el?.currentTime ?? 0
@@ -62,11 +45,6 @@ export function WatchPage() {
     if (!el) return
     el.currentTime = resumeAt.current
     if (shouldPlay.current) void el.play()
-  }
-
-  function handleTimeUpdate() {
-    if (subtitleFormat !== 'srt' || srt === null || srt.videoId !== videoId) return
-    setOverlay(activeCue(srt.cues, videoRef.current?.currentTime ?? 0) ?? null)
   }
 
   async function toggleFavorite() {
@@ -88,36 +66,14 @@ export function WatchPage() {
 
   return (
     <>
-      <div className="watch-player-wrap">
-        <video
-          ref={videoRef}
-          className="watch-player"
-          src={streamUrl(videoId, quality)}
-          controls
-          autoPlay
-          crossOrigin="anonymous"
-          onLoadedMetadata={handleLoadedMetadata}
-          onTimeUpdate={handleTimeUpdate}
-        >
-          {subtitleFormat === 'vtt'
-            ? video.subtitle_langs.map((lang) => (
-                <track
-                  key={lang}
-                  kind="subtitles"
-                  src={subtitleUrl(videoId, lang, 'vtt')}
-                  srcLang={lang}
-                  label={lang}
-                  default
-                />
-              ))
-            : null}
-        </video>
-        {subtitleFormat === 'srt' && overlay ? (
-          <div className="watch-srt-overlay" style={overlay.color ? { color: overlay.color } : undefined}>
-            {overlay.text}
-          </div>
-        ) : null}
-      </div>
+      <video
+        ref={videoRef}
+        className="watch-player"
+        src={streamUrl(videoId, quality)}
+        controls
+        autoPlay
+        onLoadedMetadata={handleLoadedMetadata}
+      />
       <h1 className="watch-title">{video.title}</h1>
       <div className="watch-actions">
         <label>
@@ -126,20 +82,6 @@ export function WatchPage() {
             {video.qualities.map((item) => (
               <option key={item} value={item}>
                 {item}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Sous-titres
-          <select
-            value={subtitleFormat}
-            onChange={(event) => setSubtitleChoice(event.target.value as SubtitleFormat)}
-          >
-            <option value="off">Off</option>
-            {video.subtitle_formats.map((format) => (
-              <option key={format} value={format}>
-                {format.toUpperCase()}
               </option>
             ))}
           </select>
