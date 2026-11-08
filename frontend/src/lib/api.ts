@@ -13,6 +13,13 @@ export function setToken(token: string | null): void {
   else localStorage.removeItem(TOKEN_KEY)
 }
 
+let handleUnauthorized = () => {}
+
+// Lets the auth context log out when the server rejects the stored token (expired after 24 h).
+export function onUnauthorized(handler: () => void): void {
+  handleUnauthorized = handler
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   if (init.body) headers.set('Content-Type', 'application/json')
@@ -20,6 +27,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
   const response = await fetch(path, { ...init, headers })
+  if (response.status === 401 && token) {
+    setToken(null)
+    handleUnauthorized()
+  }
   if (response.status === 204) return undefined as T
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {

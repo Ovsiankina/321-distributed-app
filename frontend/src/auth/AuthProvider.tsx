@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api, getToken, setToken } from '../lib/api'
+import { api, getToken, onUnauthorized, setToken } from '../lib/api'
 import type { User } from '../lib/types'
 import { AuthContext, type AuthState } from './AuthContext'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [ready, setReady] = useState(getToken() === null)
+
+  useEffect(() => onUnauthorized(() => setUser(null)), [])
 
   useEffect(() => {
     if (getToken() === null) return
