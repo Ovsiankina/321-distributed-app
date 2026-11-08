@@ -1,14 +1,19 @@
 openapi: 3.0.3
 info:
   title: API Gateway
-  version: 0.1.0
+  version: 0.2.0
   description: |
-    Contrat public de la Gateway (E0-05).
+    Contrat public de la Gateway.
 
-    Surface couverte : santé, stub d'accueil, préfixes proxy.
-    Les opérations métier (corps auth, catalogue, stream, sous-titres)
-    ne sont pas dans cette version. Elles seront ajoutées par E1-05.
+    E0-05 : `GET /health`, stub `GET /api/home`, proxy `/api/subtitles/*`.
+    E1-05 : auth, catalogue, recherche, streaming MP4.
 
+    Header `Authorization: Bearer <JWT>` requis sur
+    `GET /api/auth/me` et `GET|POST|DELETE /api/auth/favorites/*`.
+    Émis par `POST /api/auth/login` ou `POST /api/auth/register`.
+    Catalogue, recherche et streaming : accès anonyme.
+
+    Hors de cette version : liste des tags, HLS, fichiers de sous-titres.
     Toute requête client passe par la Gateway. Aucune URL de microservice
     n'est publique.
 
@@ -19,6 +24,12 @@ servers:
 tags:
   - name: gateway
     description: Routes produites par la Gateway
+  - name: auth
+    description: Authentification et favoris (service Auth)
+  - name: catalog
+    description: Métadonnées et vignettes (service Catalog)
+  - name: streaming
+    description: Livraison MP4 (service Streaming)
   - name: proxy
     description: Forward transparent vers un microservice
 
@@ -46,7 +57,7 @@ paths:
       summary: Accueil (stub)
       description: |
         Enveloppe stable. E0-05 ne définit pas le contenu de `sections`.
-        Tant que le catalogue n'est pas contracté, la réponse de référence
+        Tant que l'agrégation home n'est pas contractée, la réponse de référence
         est une liste vide.
       responses:
         "200":
@@ -60,243 +71,396 @@ paths:
         "502":
           $ref: "#/components/responses/BadGateway"
 
-  /api/auth/{path}:
-    parameters:
-      - $ref: "#/components/parameters/ProxyPath"
-    x-proxied-to: auth
-    get:
-      tags: [proxy]
-      operationId: proxyAuthGet
-      summary: Forward GET vers Auth
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
+  /api/auth/register:
     post:
-      tags: [proxy]
-      operationId: proxyAuthPost
-      summary: Forward POST vers Auth
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+      tags: [auth]
+      operationId: register
+      summary: Inscription
+      x-proxied-to: auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: alice@example.com
+              password: secret12
       responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    put:
-      tags: [proxy]
-      operationId: proxyAuthPut
-      summary: Forward PUT vers Auth
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    patch:
-      tags: [proxy]
-      operationId: proxyAuthPatch
-      summary: Forward PATCH vers Auth
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    delete:
-      tags: [proxy]
-      operationId: proxyAuthDelete
-      summary: Forward DELETE vers Auth
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
+        "201":
+          description: Compte créé, JWT retourné
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
+                email: alice@example.com
+                expires_in_hours: 24
+        "400":
+          description: Email ou mot de passe invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Email invalide
+        "409":
+          description: Email déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Cet email est déjà utilisé
         "502":
           $ref: "#/components/responses/BadGateway"
 
-  /api/catalog/{path}:
-    parameters:
-      - $ref: "#/components/parameters/ProxyPath"
-    x-proxied-to: catalog
-    get:
-      tags: [proxy]
-      operationId: proxyCatalogGet
-      summary: Forward GET vers Catalog
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
+  /api/auth/login:
     post:
-      tags: [proxy]
-      operationId: proxyCatalogPost
-      summary: Forward POST vers Catalog
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+      tags: [auth]
+      operationId: login
+      summary: Connexion
+      x-proxied-to: auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: alice@example.com
+              password: secret12
       responses:
         "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    put:
-      tags: [proxy]
-      operationId: proxyCatalogPut
-      summary: Forward PUT vers Catalog
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    patch:
-      tags: [proxy]
-      operationId: proxyCatalogPatch
-      summary: Forward PATCH vers Catalog
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    delete:
-      tags: [proxy]
-      operationId: proxyCatalogDelete
-      summary: Forward DELETE vers Catalog
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
+          description: Authentification réussie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
+                email: alice@example.com
+                expires_in_hours: 24
+        "401":
+          description: Identifiants incorrects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Identifiants incorrects
         "502":
           $ref: "#/components/responses/BadGateway"
 
-  /api/stream/{path}:
-    parameters:
-      - $ref: "#/components/parameters/ProxyPath"
-    x-proxied-to: streaming
+  /api/auth/me:
     get:
-      tags: [proxy]
-      operationId: proxyStreamGet
-      summary: Forward GET vers Streaming
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+      tags: [auth]
+      operationId: getMe
+      summary: Profil de l'utilisateur courant
+      x-proxied-to: auth
+      security:
+        - bearerAuth: []
       responses:
         "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
+          description: Profil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              example:
+                id: 1
+                email: alice@example.com
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "502":
           $ref: "#/components/responses/BadGateway"
+
+  /api/auth/favorites:
+    get:
+      tags: [auth]
+      operationId: listFavorites
+      summary: Liste des favoris
+      x-proxied-to: auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Identifiants et métadonnées des vidéos favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoritesResponse"
+              example:
+                video_ids: [intro-streaming]
+                videos:
+                  - id: intro-streaming
+                    title: Intro au streaming distribué
+                    description: Vue d'ensemble d'une plateforme de streaming miniature.
+                    tags: [tech, architecture]
+                    duration_seconds: 10
+                    thumbnail_url: /api/catalog/videos/intro-streaming/thumbnail
+                    qualities: [480p, 720p]
+                    featured: true
+                    subtitle_langs: [fr]
+                    stream_modes: [mp4]
+                    subtitle_formats: [srt]
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/auth/favorites/{video_id}:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
     post:
-      tags: [proxy]
-      operationId: proxyStreamPost
-      summary: Forward POST vers Streaming
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+      tags: [auth]
+      operationId: addFavorite
+      summary: Ajouter un favori
+      x-proxied-to: auth
+      security:
+        - bearerAuth: []
       responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
+        "201":
+          description: Favori ajouté, ou déjà présent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoriteActionResponse"
+              example:
+                ok: true
+                video_id: intro-streaming
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    put:
-      tags: [proxy]
-      operationId: proxyStreamPut
-      summary: Forward PUT vers Streaming
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "502":
-          $ref: "#/components/responses/BadGateway"
-    patch:
-      tags: [proxy]
-      operationId: proxyStreamPatch
-      summary: Forward PATCH vers Streaming
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
-      responses:
-        "200":
-          $ref: "#/components/responses/Proxied"
-        "404":
-          $ref: "#/components/responses/NotFound"
+          $ref: "#/components/responses/ResourceNotFound"
         "502":
           $ref: "#/components/responses/BadGateway"
     delete:
-      tags: [proxy]
-      operationId: proxyStreamDelete
-      summary: Forward DELETE vers Streaming
-      description: |
-        Forward transparent. Les headers Authorization et Content-Type
-        sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+      tags: [auth]
+      operationId: removeFavorite
+      summary: Retirer un favori
+      x-proxied-to: auth
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Favori retiré, ou déjà absent
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/catalog/videos:
+    get:
+      tags: [catalog]
+      operationId: listVideos
+      summary: Liste du catalogue
+      x-proxied-to: catalog
       responses:
         "200":
-          $ref: "#/components/responses/Proxied"
+          description: Toutes les vidéos, sans pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoListResponse"
+              example:
+                total: 1
+                items:
+                  - id: intro-streaming
+                    title: Intro au streaming distribué
+                    description: Vue d'ensemble d'une plateforme de streaming miniature.
+                    tags: [tech, architecture]
+                    duration_seconds: 10
+                    thumbnail_url: /api/catalog/videos/intro-streaming/thumbnail
+                    qualities: [480p, 720p]
+                    featured: true
+                    subtitle_langs: [fr]
+                    stream_modes: [mp4]
+                    subtitle_formats: [srt]
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/catalog/featured:
+    get:
+      tags: [catalog]
+      operationId: listFeatured
+      summary: Vidéos mises en avant
+      x-proxied-to: catalog
+      responses:
+        "200":
+          description: Vidéos dont `featured` est vrai
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoItemsResponse"
+              example:
+                items:
+                  - id: intro-streaming
+                    title: Intro au streaming distribué
+                    description: Vue d'ensemble d'une plateforme de streaming miniature.
+                    tags: [tech, architecture]
+                    duration_seconds: 10
+                    thumbnail_url: /api/catalog/videos/intro-streaming/thumbnail
+                    qualities: [480p, 720p]
+                    featured: true
+                    subtitle_langs: [fr]
+                    stream_modes: [mp4]
+                    subtitle_formats: [srt]
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/catalog/search:
+    get:
+      tags: [catalog]
+      operationId: searchVideos
+      summary: Recherche par mots-clés
+      description: Recherche sur le titre, la description et les tags.
+      x-proxied-to: catalog
+      parameters:
+        - $ref: "#/components/parameters/SearchQuery"
+      responses:
+        "200":
+          description: Résultats. Une requête vide renvoie une liste vide.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+              examples:
+                withResults:
+                  summary: Recherche streaming
+                  value:
+                    q: streaming
+                    items:
+                      - id: intro-streaming
+                        title: Intro au streaming distribué
+                        description: Vue d'ensemble d'une plateforme de streaming miniature.
+                        tags: [tech, architecture]
+                        duration_seconds: 10
+                        thumbnail_url: /api/catalog/videos/intro-streaming/thumbnail
+                        qualities: [480p, 720p]
+                        featured: true
+                        subtitle_langs: [fr]
+                        stream_modes: [mp4]
+                        subtitle_formats: [srt]
+                empty:
+                  summary: Requête vide
+                  value:
+                    q: ""
+                    items: []
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/catalog/videos/{video_id}:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+    get:
+      tags: [catalog]
+      operationId: getVideo
+      summary: Détail d'une vidéo
+      x-proxied-to: catalog
+      responses:
+        "200":
+          description: Métadonnées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+              example:
+                id: intro-streaming
+                title: Intro au streaming distribué
+                description: Vue d'ensemble d'une plateforme de streaming miniature.
+                tags: [tech, architecture]
+                duration_seconds: 10
+                thumbnail_url: /api/catalog/videos/intro-streaming/thumbnail
+                qualities: [480p, 720p]
+                featured: true
+                subtitle_langs: [fr]
+                stream_modes: [mp4]
+                subtitle_formats: [srt]
         "404":
-          $ref: "#/components/responses/NotFound"
+          $ref: "#/components/responses/ResourceNotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/catalog/videos/{video_id}/thumbnail:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+    get:
+      tags: [catalog]
+      operationId: getVideoThumbnail
+      summary: Vignette JPEG
+      x-proxied-to: catalog
+      responses:
+        "200":
+          description: Corps binaire JPEG
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/ResourceNotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/stream/{video_id}:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+      - $ref: "#/components/parameters/QualityQuery"
+    get:
+      tags: [streaming]
+      operationId: streamMp4
+      summary: Flux MP4 progressif
+      description: |
+        Visionnage anonyme, sans JWT.
+        Sans header `Range` : 200 et le fichier entier.
+        Avec `Range: bytes=0-65535` : 206 et la portion demandée.
+        La Gateway transmet `Range` sans le modifier.
+      x-proxied-to: streaming
+      responses:
+        "200":
+          description: Fichier MP4 complet
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+              example: bytes
+            Content-Type:
+              schema:
+                type: string
+              example: video/mp4
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        "206":
+          description: Portion du fichier
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              example: bytes 0-65535/137070
+            Accept-Ranges:
+              schema:
+                type: string
+              example: bytes
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Qualité invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Qualité inconnue (480p ou 720p)
+        "404":
+          $ref: "#/components/responses/ResourceNotFound"
         "502":
           $ref: "#/components/responses/BadGateway"
 
@@ -311,7 +475,7 @@ paths:
       description: |
         Forward transparent. Les headers Authorization et Content-Type
         sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+        microservice est hors E1-05.
       responses:
         "200":
           $ref: "#/components/responses/Proxied"
@@ -326,7 +490,7 @@ paths:
       description: |
         Forward transparent. Les headers Authorization et Content-Type
         sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+        microservice est hors E1-05.
       responses:
         "200":
           $ref: "#/components/responses/Proxied"
@@ -341,7 +505,7 @@ paths:
       description: |
         Forward transparent. Les headers Authorization et Content-Type
         sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+        microservice est hors E1-05.
       responses:
         "200":
           $ref: "#/components/responses/Proxied"
@@ -356,7 +520,7 @@ paths:
       description: |
         Forward transparent. Les headers Authorization et Content-Type
         sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+        microservice est hors E1-05.
       responses:
         "200":
           $ref: "#/components/responses/Proxied"
@@ -371,7 +535,7 @@ paths:
       description: |
         Forward transparent. Les headers Authorization et Content-Type
         sont transmis sans modification. Le corps de la réponse du
-        microservice est hors E0-05.
+        microservice est hors E1-05.
       responses:
         "200":
           $ref: "#/components/responses/Proxied"
@@ -381,6 +545,15 @@ paths:
           $ref: "#/components/responses/BadGateway"
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Header `Authorization: Bearer <token>`.
+        Requis sur `GET /api/auth/me` et sur `GET|POST|DELETE /api/auth/favorites/*`.
+
   parameters:
     ProxyPath:
       name: path
@@ -388,11 +561,41 @@ components:
       required: true
       description: |
         Reste du chemin sous le préfixe, transmis tel quel.
-        Le runtime forward tout le préfixe (E0-04), y compris plusieurs segments.
+        Le runtime forward tout le préfixe, y compris plusieurs segments.
       schema:
         type: string
+    VideoId:
+      name: video_id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 64
+      example: intro-streaming
+    SearchQuery:
+      name: q
+      in: query
+      required: false
+      description: Texte recherché dans le titre, la description et les tags.
+      schema:
+        type: string
+        default: ""
+      example: streaming
+    QualityQuery:
+      name: quality
+      in: query
+      required: false
+      description: Défaut d'implémentation attendu, 720p.
+      schema:
+        $ref: "#/components/schemas/Quality"
+      example: 720p
 
   schemas:
+    Quality:
+      type: string
+      enum: [480p, 720p]
+
     HealthResponse:
       type: object
       additionalProperties: false
@@ -412,7 +615,7 @@ components:
       properties:
         sections:
           type: array
-          description: Schéma des éléments hors E0-05.
+          description: Contenu de l'agrégation home hors E1-05.
           items:
             type: object
 
@@ -424,22 +627,201 @@ components:
         detail:
           type: string
 
+    RegisterRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 5
+          maxLength: 255
+        password:
+          type: string
+          minLength: 6
+          maxLength: 128
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    TokenResponse:
+      type: object
+      additionalProperties: false
+      required: [token, email, expires_in_hours]
+      properties:
+        token:
+          type: string
+          description: JWT à renvoyer dans Authorization Bearer
+        email:
+          type: string
+          format: email
+        expires_in_hours:
+          type: integer
+          example: 24
+
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, email]
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+
+    Video:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - title
+        - description
+        - tags
+        - duration_seconds
+        - thumbnail_url
+        - qualities
+        - featured
+        - subtitle_langs
+        - stream_modes
+        - subtitle_formats
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        duration_seconds:
+          type: integer
+          minimum: 1
+        thumbnail_url:
+          type: string
+          description: Chemin relatif servi par la Gateway
+          example: /api/catalog/videos/intro-streaming/thumbnail
+        qualities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Quality"
+        featured:
+          type: boolean
+        subtitle_langs:
+          type: array
+          items:
+            type: string
+        stream_modes:
+          type: array
+          items:
+            type: string
+            enum: [mp4, hls]
+        subtitle_formats:
+          type: array
+          items:
+            type: string
+            enum: [srt, vtt]
+
+    VideoItemsResponse:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+
+    VideoListResponse:
+      type: object
+      additionalProperties: false
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        total:
+          type: integer
+          minimum: 0
+
+    SearchResponse:
+      type: object
+      additionalProperties: false
+      required: [items, q]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        q:
+          type: string
+
+    FavoritesResponse:
+      type: object
+      additionalProperties: false
+      required: [video_ids, videos]
+      properties:
+        video_ids:
+          type: array
+          items:
+            type: string
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+
+    FavoriteActionResponse:
+      type: object
+      additionalProperties: false
+      required: [ok, video_id]
+      properties:
+        ok:
+          type: boolean
+          example: true
+        video_id:
+          type: string
+
   responses:
     Proxied:
       description: |
         Réponse du microservice, transmise sans transformation.
-        Le schéma du corps est hors E0-05.
+        Le schéma du corps n'est pas encore contracté.
     NotFound:
-      description: |
-        Préfixe inconnu de la Gateway.
-        Une 404 produite par le microservice est transmise telle quelle
-        et n'utilise pas forcément ce schéma.
+      description: Préfixe inconnu de la Gateway.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorDetail"
           example:
             detail: Route inconnue
+    ResourceNotFound:
+      description: Vidéo, vignette ou fichier vidéo introuvable.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: Vidéo introuvable
+    Unauthorized:
+      description: Header Authorization absent ou JWT invalide.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorDetail"
+          example:
+            detail: Authentification requise
     BadGateway:
       description: Microservice injoignable.
       content:
