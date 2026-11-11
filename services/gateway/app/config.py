@@ -12,6 +12,27 @@ def listen_port() -> int:
     return port
 
 
+def catalog_upstream_base() -> str:
+    return os.environ.get(
+        "GATEWAY_CATALOG_URL", "http://127.0.0.1:8002"
+    ).rstrip("/")
+
+
+def catalog_timeout_seconds() -> float:
+    raw = os.environ.get("GATEWAY_CATALOG_TIMEOUT_SECONDS", "5.0")
+    try:
+        timeout = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"GATEWAY_CATALOG_TIMEOUT_SECONDS doit être un nombre (reçu {raw!r})"
+        ) from exc
+    if timeout <= 0:
+        raise ValueError(
+            f"GATEWAY_CATALOG_TIMEOUT_SECONDS doit être positif (reçu {raw!r})"
+        )
+    return timeout
+
+
 def subtitles_upstream_base() -> str:
     return os.environ.get(
         "GATEWAY_SUBTITLES_URL", "http://127.0.0.1:8004"

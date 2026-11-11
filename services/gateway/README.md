@@ -4,16 +4,17 @@ Point d'entrée public (E0-04 / E0-05). Les clients n'appellent pas les autres m
 
 Contrat : [`docs/API_GATEWAY.md`](../../docs/API_GATEWAY.md), [`docs/api/gateway.openapi.yaml`](../../docs/api/gateway.openapi.yaml).
 
-## Périmètre actuel (E0-05)
+## Périmètre actuel
 
 | Route | Comportement |
 |-------|----------------|
 | `GET /health` | `{"status":"ok","service":"gateway"}` |
 | `GET /api/home` | Stub `{"sections":[]}` |
+| `GET /api/catalog/*` | Proxy transparent vers `GATEWAY_CATALOG_URL` (E1-05 catalog) |
 | `* /api/subtitles/*` | Proxy transparent vers `GATEWAY_SUBTITLES_URL` |
 | Autre `/api/*` | **404** `Route inconnue` |
 
-Auth, catalog, streaming (E1-05) : stories ultérieures.
+Auth, streaming (E1-05) : stories ultérieures.
 
 ## Port (E0-04)
 
@@ -31,6 +32,7 @@ cd services/gateway
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+export GATEWAY_CATALOG_URL=http://127.0.0.1:8002
 export GATEWAY_SUBTITLES_URL=http://127.0.0.1:8004
 uvicorn app.main:app --reload --port 8000
 ```
@@ -52,5 +54,7 @@ docker compose up --build
 | Variable | Défaut | Rôle |
 |----------|--------|------|
 | `GATEWAY_PORT` | `8000` | Port d'écoute (E0-04) |
+| `GATEWAY_CATALOG_URL` | `http://127.0.0.1:8002` | Base URL du service Catalog |
+| `GATEWAY_CATALOG_TIMEOUT_SECONDS` | `5.0` | Timeout HTTP vers Catalog |
 | `GATEWAY_SUBTITLES_URL` | `http://127.0.0.1:8004` | Base URL du service Subtitles |
 | `GATEWAY_SUBTITLES_TIMEOUT_SECONDS` | `5.0` | Timeout HTTP vers Subtitles |

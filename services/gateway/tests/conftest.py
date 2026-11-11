@@ -13,6 +13,7 @@ def _purge_app_modules() -> None:
 
 @pytest.fixture
 def client(monkeypatch):
+    monkeypatch.setenv("GATEWAY_CATALOG_URL", "http://catalog.test")
     monkeypatch.setenv("GATEWAY_SUBTITLES_URL", "http://subtitles.test")
     monkeypatch.setenv("GATEWAY_SUBTITLES_TIMEOUT_SECONDS", "1.0")
     _purge_app_modules()

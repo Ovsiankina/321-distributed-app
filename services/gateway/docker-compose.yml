@@ -5,6 +5,7 @@ services:
       - "${GATEWAY_PORT:-8000}:8000"
     environment:
       GATEWAY_PORT: 8000
+      GATEWAY_CATALOG_URL: http://host.docker.internal:8002
       GATEWAY_SUBTITLES_URL: http://host.docker.internal:8004
     extra_hosts:
       - "host.docker.internal:host-gateway"
