@@ -40,3 +40,5 @@ Réponse `200` :
 | 400 | Fichier manquant |
 | 415 | `Content-Type` non vidéo |
 | 501 | JWT valide, catalog ON, mais traitement upload non implémenté |
+
+**Politique catalog :** pas de mise en attente. Si le catalog est injoignable ou si son `/health` est invalide, la requête s'arrête en **503** sans écriture sur `UPLOAD_DATA_DIR`. Le client réessaie une fois le catalog disponible ; le serveur ne conserve pas de fichier pour une reprise différée.

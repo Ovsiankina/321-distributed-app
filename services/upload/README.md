@@ -2,7 +2,7 @@
 
 Réception et traitement des vidéos uploadées (squelette FastAPI). JWT obligatoire sur `POST /api/upload/videos`.
 
-**Contrat gateway :** section Upload encore en _TODO_ dans [`docs/API_GATEWAY.md`](../../docs/API_GATEWAY.md). Voir [`docs/API.md`](docs/API.md) pour l'API provisoire du service. Questions ouvertes : [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md).
+**Contrat gateway :** section Upload encore en _TODO_ dans [`docs/API_GATEWAY.md`](../../docs/API_GATEWAY.md). Voir [`docs/API.md`](docs/API.md) pour l'API provisoire du service.
 
 ## Prérequis
 
@@ -48,6 +48,8 @@ API sur le port **8003**.
 | `UPLOAD_CATALOG_TIMEOUT_SECONDS` | `3.0` | Timeout HTTP vers le catalog. Nombre strictement positif. Une valeur illisible empêche le démarrage. |
 
 ## Intégration multi-services
+
+Catalog down → **503**, pas de buffer ; le client réessaie lorsque le catalog répond de nouveau sur `/health`.
 
 ```bash
 export INTEGRATION_CATALOG_URL=http://127.0.0.1:8002
