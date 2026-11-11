@@ -53,7 +53,7 @@ _TODO : pour chaque endpoint restant, définir la méthode, le chemin, le schém
 | Code | `detail` | Cas |
 |------|----------|-----|
 | 400 | `Email invalide` | Corps d'inscription invalide |
-| 400 | `Qualité inconnue (480p ou 720p)` | Query `quality` du streaming |
+| 400 | `Qualité inconnue (360p ou 720p)` | Query `quality` du streaming |
 | 401 | `Authentification requise` | JWT absent ou invalide sur `/me` et les favoris |
 | 401 | `Identifiants incorrects` | Login |
 | 404 | `Route inconnue` | Préfixe non géré par la Gateway |
