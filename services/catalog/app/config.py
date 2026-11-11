@@ -12,5 +12,7 @@ CATALOG_SUBTITLES_DIR = Path(os.environ.get("CATALOG_SUBTITLES_DIR", "/data/subt
 
 THUMBS_DIR = CATALOG_DATA_DIR / "thumbs"
 
+FFMPEG_TIMEOUT_SECONDS = 30
+
 DEFAULT_DATABASE_URL = "mariadb+pymysql://catalog:catalog@localhost:3306/catalog"
 CATALOG_DATABASE_URL = os.environ.get("CATALOG_DATABASE_URL", DEFAULT_DATABASE_URL)

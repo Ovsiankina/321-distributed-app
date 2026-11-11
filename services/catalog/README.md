@@ -72,7 +72,7 @@ API sur le port **8002**.
 Une fois l'API démarrée (local ou `docker compose up`) :
 
 ```bash
-curl -s http://127.0.0.1:8002/health
+curl -s http://127.0.0.1:8002/health   # 200 seulement si MariaDB répond
 curl -s http://127.0.0.1:8002/api/catalog/videos | jq .total          # → 10
 curl -s "http://127.0.0.1:8002/api/catalog/search?q=internet" | jq '.items[].id'
 ```

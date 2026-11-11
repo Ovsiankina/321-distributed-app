@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-from .config import CATALOG_DATA_DIR, CATALOG_VIDEOS_DIR, THUMBS_DIR
+from .config import CATALOG_DATA_DIR, CATALOG_VIDEOS_DIR, FFMPEG_TIMEOUT_SECONDS, THUMBS_DIR
 
 
 def thumbnail_relative_path(video_id: str) -> str:
@@ -44,7 +44,9 @@ def ensure_thumbnail(video_id: str) -> Path | None:
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            timeout=FFMPEG_TIMEOUT_SECONDS,
         )
-    except (FileNotFoundError, subprocess.CalledProcessError):
+    except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        dest.unlink(missing_ok=True)
         return None
     return dest if dest.is_file() else None

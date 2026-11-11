@@ -8,10 +8,18 @@ Référence normative : [`docs/api/gateway.openapi.yaml`](../../../docs/api/gate
 
 ### `GET /health`
 
+Sonde MariaDB (`SELECT 1`). Le `HEALTHCHECK` de l'image Docker utilise cette route : une base injoignable rend le conteneur unhealthy. Le service upload traite tout code autre que 200 comme une indisponibilité.
+
 Réponse `200` :
 
 ```json
 { "status": "ok", "service": "catalog" }
+```
+
+Réponse `503` si la base ne répond pas :
+
+```json
+{ "status": "unavailable", "service": "catalog" }
 ```
 
 ## Catalogue

@@ -1,8 +1,11 @@
+import fcntl
 import json
+from contextlib import contextmanager
 from pathlib import Path
 
 from sqlalchemy.orm import Session
 
+from .config import CATALOG_DATA_DIR
 from .import_catalog import (
     CatalogEntry,
     default_catalog_path,
@@ -80,5 +83,23 @@ def sync_catalog_db(
         ensure_thumbnail(entry.id)
 
 
-def seed_if_empty(db: Session) -> None:
-    sync_catalog_db(db)
+@contextmanager
+def catalog_sync_lock(blocking: bool = True):
+    CATALOG_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    handle = (CATALOG_DATA_DIR / ".catalog-sync.lock").open("a")
+    flags = fcntl.LOCK_EX
+    if not blocking:
+        flags |= fcntl.LOCK_NB
+    try:
+        fcntl.flock(handle.fileno(), flags)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+    finally:
+        handle.close()
+
+
+def sync_catalog_on_startup(db: Session) -> None:
+    with catalog_sync_lock():
+        sync_catalog_db(db)
