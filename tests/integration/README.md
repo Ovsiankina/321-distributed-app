@@ -9,6 +9,7 @@ Tests **entre composants** ou avec **MariaDB réelle**, distincts des tests unit
 | `test_catalog_mariadb.py` | Catalog ↔ MariaDB | Exécutable (Docker) |
 | `test_auth_catalog.py` | Auth (JWT) ↔ catalog (favoris / `video_id`) | Actif si `INTEGRATION_AUTH_URL` est défini |
 | `test_upload_auth.py` | Upload ↔ Auth | Actif si `INTEGRATION_UPLOAD_URL` est défini (API upload pas encore dans l'OpenAPI gateway) |
+| `test_upload_catalog.py` | Upload ↔ Catalog (`/health` avant upload authentifié) | Catalog + upload (+ auth pour le test JWT) |
 
 Le contrat gateway précise que **catalog et recherche sont publics** (pas de JWT). Le lien Auth ↔ catalog passe surtout par les **favoris** (`POST /api/auth/favorites/{video_id}` → 404 si la vidéo n'est pas au catalog).
 
@@ -50,10 +51,14 @@ export INTEGRATION_AUTH_URL=http://127.0.0.1:8001   # exemple
 pytest tests/integration/test_auth_catalog.py -m integration -v
 ```
 
-## Upload ↔ Auth (quand upload est spécifié et implémenté)
+## Upload ↔ Auth / Catalog
+
+Démarrer **catalog** (8002) et **upload** (8003) ; configurer upload avec `UPLOAD_CATALOG_URL=http://127.0.0.1:8002`.
 
 ```bash
+export INTEGRATION_CATALOG_URL=http://127.0.0.1:8002
 export INTEGRATION_AUTH_URL=http://127.0.0.1:8001
 export INTEGRATION_UPLOAD_URL=http://127.0.0.1:8003
 pytest tests/integration/test_upload_auth.py -m integration -v
+pytest tests/integration/test_upload_catalog.py -m integration -v
 ```

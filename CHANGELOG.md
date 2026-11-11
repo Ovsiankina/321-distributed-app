@@ -9,3 +9,7 @@
 - Le pool SQLAlchemy MariaDB utilise `pool_pre_ping` pour écarter les connexions coupées après un redémarrage de `catalog-db`.
 - Le CORS du catalog n'envoie plus `Access-Control-Allow-Credentials` avec une origine `*`.
 - Le démarrage resynchronise le catalogue sous un verrou fichier. L'entrée `seed_if_empty`, qui synchronisait toujours malgré son nom, est retirée.
+- Le handler d'upload est synchrone, pour que l'appel HTTP vers le catalog ne bloque pas la boucle d'événements.
+- Un `/health` catalog qui n'est pas un objet JSON répond 503 (`Catalog indisponible`).
+- `UPLOAD_CATALOG_TIMEOUT_SECONDS` illisible ou non positif empêche le démarrage, au lieu d'un 500 au moment de l'upload.
+- Les tests du garde catalog patchent `ensure_catalog_ready` tel qu'il est appelé par la route.
