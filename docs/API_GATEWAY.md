@@ -20,7 +20,9 @@
 - `Authorization: Bearer <JWT>` est requis sur `GET /api/auth/me` et sur `GET|POST|DELETE /api/auth/favorites/*`. Il est émis par `POST /api/auth/register` et `POST /api/auth/login`. Catalogue, recherche et streaming n'exigent pas de JWT.
 - Le client n'appelle aucun microservice directement.
 
-_TODO : URL de base (le port d'écoute est fixé par E0-04), versioning._
+**Port d'écoute (E0-04) :** `8000` en local et en Docker (`GATEWAY_PORT`). Origine client : `http://127.0.0.1:8000/`. Implémentation : `services/gateway/`.
+
+_TODO : versioning._
 
 ## Points d'entrée
 
