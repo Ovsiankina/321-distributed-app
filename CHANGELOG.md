@@ -5,6 +5,7 @@
 ### Added
 
 - Microservice Gateway (Python 3.12) : port **8000** (E0-04), `GET /health`, stub `GET /api/home`, proxy `/api/subtitles/*` avec 502 si service cible injoignable (E0-05). Routes `/api/*` non couvertes : 404 `Route inconnue`.
+- Gateway : proxy transparent `GET /api/catalog/*` vers le microservice catalog (E1-05), 502 si catalog injoignable.
 
 ### Fixed
 

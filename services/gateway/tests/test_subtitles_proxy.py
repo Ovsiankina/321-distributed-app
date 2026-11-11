@@ -1,6 +1,6 @@
 import httpx
 
-from app.routers import subtitles as subtitles_router
+from app import proxy as proxy_module
 
 
 def test_subtitles_proxy_returns_502_when_upstream_down(client, monkeypatch):
@@ -14,9 +14,7 @@ def test_subtitles_proxy_returns_502_when_upstream_down(client, monkeypatch):
         async def request(self, *_args, **_kwargs):
             raise httpx.ConnectError("down")
 
-    monkeypatch.setattr(
-        subtitles_router.httpx, "AsyncClient", lambda **_kw: BrokenClient()
-    )
+    monkeypatch.setattr(proxy_module.httpx, "AsyncClient", lambda **_kw: BrokenClient())
 
     response = client.get("/api/subtitles/fr/foo.srt")
     assert response.status_code == 502
@@ -44,7 +42,7 @@ def test_subtitles_proxy_forwards_get(client, monkeypatch):
             captured["headers"] = headers or {}
             return FakeResponse()
 
-    monkeypatch.setattr(subtitles_router.httpx, "AsyncClient", lambda **_kw: FakeClient())
+    monkeypatch.setattr(proxy_module.httpx, "AsyncClient", lambda **_kw: FakeClient())
 
     response = client.get(
         "/api/subtitles/videos/abc/fr",
