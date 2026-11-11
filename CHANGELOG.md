@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Microservice Gateway (Python 3.12) : port **8000** (E0-04), `GET /health`, stub `GET /api/home`, proxy `/api/subtitles/*` avec 502 si service cible injoignable (E0-05). Routes `/api/*` non couvertes : 404 `Route inconnue`.
+
 ### Fixed
 
 - Le catalog borne `ffmpeg` à 30 s lors de la génération des vignettes, pour qu'un MP4 bloquant ne fige plus le démarrage.
