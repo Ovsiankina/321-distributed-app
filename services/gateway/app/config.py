@@ -52,3 +52,43 @@ def subtitles_timeout_seconds() -> float:
             f"GATEWAY_SUBTITLES_TIMEOUT_SECONDS doit être positif (reçu {raw!r})"
         )
     return timeout
+
+
+def auth_upstream_base() -> str:
+    return os.environ.get("GATEWAY_AUTH_URL", "http://127.0.0.1:8001").rstrip("/")
+
+
+def auth_timeout_seconds() -> float:
+    raw = os.environ.get("GATEWAY_AUTH_TIMEOUT_SECONDS", "5.0")
+    try:
+        timeout = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"GATEWAY_AUTH_TIMEOUT_SECONDS doit être un nombre (reçu {raw!r})"
+        ) from exc
+    if timeout <= 0:
+        raise ValueError(
+            f"GATEWAY_AUTH_TIMEOUT_SECONDS doit être positif (reçu {raw!r})"
+        )
+    return timeout
+
+
+def streaming_upstream_base() -> str:
+    return os.environ.get(
+        "GATEWAY_STREAMING_URL", "http://127.0.0.1:8003"
+    ).rstrip("/")
+
+
+def streaming_timeout_seconds() -> float:
+    raw = os.environ.get("GATEWAY_STREAMING_TIMEOUT_SECONDS", "30.0")
+    try:
+        timeout = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"GATEWAY_STREAMING_TIMEOUT_SECONDS doit être un nombre (reçu {raw!r})"
+        ) from exc
+    if timeout <= 0:
+        raise ValueError(
+            f"GATEWAY_STREAMING_TIMEOUT_SECONDS doit être positif (reçu {raw!r})"
+        )
+    return timeout

@@ -15,6 +15,8 @@ def _purge_app_modules() -> None:
 def client(monkeypatch):
     monkeypatch.setenv("GATEWAY_CATALOG_URL", "http://catalog.test")
     monkeypatch.setenv("GATEWAY_SUBTITLES_URL", "http://subtitles.test")
+    monkeypatch.setenv("GATEWAY_AUTH_URL", "http://auth.test")
+    monkeypatch.setenv("GATEWAY_STREAMING_URL", "http://streaming.test")
     monkeypatch.setenv("GATEWAY_SUBTITLES_TIMEOUT_SECONDS", "1.0")
     _purge_app_modules()
     main = importlib.import_module("app.main")
