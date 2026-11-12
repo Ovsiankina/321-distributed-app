@@ -12,14 +12,16 @@ Le catalogue est persisté dans **MariaDB 11** (conteneur `catalog-db`). Les vig
 
 ## Développement local
 
-Démarrer MariaDB :
+L'API **uvicorn sur l'hôte** doit joindre MariaDB via un port publié. Le `docker-compose.yml` seul démarre `catalog-db` **sans** mapper `3306` sur la machine : `localhost:3306` refuse la connexion.
+
+Exposer MariaDB en local (port debug **3310**, voir `docker-compose.integration.yml` et `tests/integration/README.md`) :
 
 ```bash
 cd services/catalog
-docker compose up -d catalog-db
+docker compose -f docker-compose.yml -f docker-compose.integration.yml up -d catalog-db
 ```
 
-Puis l'API :
+Puis l'API (depuis `services/catalog`) :
 
 ```bash
 python3 -m venv .venv
@@ -28,9 +30,11 @@ pip install -r requirements.txt
 export CATALOG_DATA_DIR=/tmp/catalog-data
 export CATALOG_VIDEOS_DIR=../../datasets/videos
 export CATALOG_SUBTITLES_DIR=../../datasets/subtitles
-export CATALOG_DATABASE_URL=mariadb+pymysql://catalog:catalog@localhost:3306/catalog
+export CATALOG_DATABASE_URL=mariadb+pymysql://catalog:catalog@127.0.0.1:3310/catalog
 uvicorn app.main:app --reload --port 8002
 ```
+
+Alternative sans uvicorn local : [Docker (catalog + MariaDB)](#docker-catalog--mariadb) (`docker compose up --build`). L'API dans le conteneur utilise le réseau Docker (`catalog-db:3306`).
 
 Tests (SQLite temporaire **uniquement** dans pytest) :
 
@@ -83,7 +87,7 @@ La recherche `internet` doit renvoyer au moins `UXielWVovBo` (match dans la desc
 
 | Variable | Défaut | Rôle |
 |----------|--------|------|
-| `CATALOG_DATABASE_URL` | `mariadb+pymysql://catalog:catalog@localhost:3306/catalog` | Métadonnées catalogue (MariaDB) |
+| `CATALOG_DATABASE_URL` | `mariadb+pymysql://catalog:catalog@localhost:3306/catalog` (défaut code ; **uvicorn local** : `@127.0.0.1:3310` après compose integration) | Métadonnées catalogue (MariaDB) |
 | `CATALOG_DATA_DIR` | `/data/catalog` | Volume `thumbs/` (fichiers) |
 | `CATALOG_FIXTURES_DIR` | `fixtures/` (dans l'image) | `catalog.json`, `featured.json` |
 | `CATALOG_VIDEOS_DIR` | `/data/videos` | `{video_id}.mp4` pour qualités et vignettes |
