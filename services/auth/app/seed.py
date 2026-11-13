@@ -50,8 +50,7 @@ def seed_users(db: Session, path: Path | None = None) -> None:
     db.flush()
 
     existing = {
-        user.email: user
-        for user in db.query(User).filter(User.email.in_(list(wanted)))
+        user.email: user for user in db.query(User).filter(User.email.in_(list(wanted)))
     }
     for email, channel_id in wanted.items():
         user = existing.get(email)
