@@ -4,6 +4,7 @@
 
 ### Added
 
+- Microservice Auth (Python 3.12, port 8001) : `POST /api/auth/register`, `POST /api/auth/login` et `GET /api/auth/me` (E1-03). JWT signés en EdDSA et valables 1 h, mots de passe hachés en Argon2id, base MariaDB `auth-db`, 8 comptes créateurs seedés avec leur `channel_id`.
 - Contrat Gateway 0.3.0 : `POST /api/auth/login` répond aussi 400 (corps invalide) et 429 (10 échecs en 60 s pour un même email, header `Retry-After`). Les exemples de `expires_in_hours` passent à 1.
 
 ### Fixed

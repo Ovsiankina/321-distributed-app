@@ -1,0 +1,30 @@
+services:
+  auth-db:
+    image: mariadb:11
+    environment:
+      MARIADB_USER: auth
+      MARIADB_PASSWORD: ${AUTH_DB_PASSWORD:?définir AUTH_DB_PASSWORD dans .env (voir .env.example)}
+      MARIADB_DATABASE: auth
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - auth-mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth:
+    build: .
+    ports:
+      # Publié pour la Gateway (host.docker.internal:8001) tant qu'il n'y a pas de Compose commun.
+      - "8001:8001"
+    environment:
+      AUTH_DATABASE_URL: mariadb+pymysql://auth:${AUTH_DB_PASSWORD}@auth-db:3306/auth
+      AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY:?définir AUTH_JWT_PRIVATE_KEY dans .env (voir README)}
+    depends_on:
+      auth-db:
+        condition: service_healthy
+
+volumes:
+  auth-mariadb-data:

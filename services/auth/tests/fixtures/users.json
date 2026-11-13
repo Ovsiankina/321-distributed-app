@@ -1,0 +1,13 @@
+{
+  "default_password": "demo1234",
+  "users": [
+    {
+      "email": "createur@stream321.local",
+      "channel_id": "UCcreateurDeTest00000001"
+    },
+    {
+      "email": "Autre.Createur@stream321.local",
+      "channel_id": "UCcreateurDeTest00000002"
+    }
+  ]
+}
