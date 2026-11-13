@@ -1,0 +1,37 @@
+{
+  "default_password": "demo1234",
+  "users": [
+    {
+      "email": "cestpassorcierofficiel@stream321.local",
+      "channel_id": "UCENv8pH4LkzvuSV_qHIcslg"
+    },
+    {
+      "email": "micode@stream321.local",
+      "channel_id": "UCYnvxJ-PKiGXo_tYXpWAC-w"
+    },
+    {
+      "email": "sylvqin@stream321.local",
+      "channel_id": "UCseGV3amBLISlIOMQodPfVQ"
+    },
+    {
+      "email": "underscore_@stream321.local",
+      "channel_id": "UCWedHS9qKebauVIK2J7383g"
+    },
+    {
+      "email": "questionsdhistoire@stream321.local",
+      "channel_id": "UCCGRtSqLfljpX9mzCYDsQIg"
+    },
+    {
+      "email": "defendoff@stream321.local",
+      "channel_id": "UC_WDjhOlU50NUUMwuJid5KA"
+    },
+    {
+      "email": "justetry@stream321.local",
+      "channel_id": "UCdV6JBe40vqPQOsG4boS5zQ"
+    },
+    {
+      "email": "lafollehistoire@stream321.local",
+      "channel_id": "UCBmGPY1gJ4XnXfek849BjTA"
+    }
+  ]
+}

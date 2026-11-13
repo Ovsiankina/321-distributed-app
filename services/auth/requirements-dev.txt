@@ -1,0 +1,7 @@
+# Tests seulement : l'image Docker n'installe que requirements.txt.
+-r requirements.txt
+pytest==8.3.4
+httpx==0.28.1
+jsonschema==4.26.0
+openapi-spec-validator==0.9.0
+prance==26.7.19.0

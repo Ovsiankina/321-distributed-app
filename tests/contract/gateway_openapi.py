@@ -1,4 +1,8 @@
-"""Réponses catalog validées contre docs/api/gateway.openapi.yaml (contrat E1-05)."""
+"""Réponses des services validées contre docs/api/gateway.openapi.yaml.
+
+Partagé par les tests de services/auth et de services/catalog : leur pytest.ini met
+ce dossier dans pythonpath.
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,7 @@ from pathlib import Path
 import jsonschema
 from prance import ResolvingParser
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 GATEWAY_OPENAPI = REPO_ROOT / "docs/api/gateway.openapi.yaml"
 
 
