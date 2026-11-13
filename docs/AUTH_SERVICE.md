@@ -18,7 +18,8 @@
   glissante, comptée avant le hachage (§9) ; normalisation complète des emails et seed
   qui déplace les chaînes (§5) ; détails `404`, `405` et corps non UTF-8 en français
   (§7) ; connexion à la base rendue avant le hachage (D4) ; dépendances de test hors
-  de l'image (§11).
+  de l'image (§11). Docker Compose avec MariaDB et tests dans `ubuntu:24.04` vérifiés
+  (D1, §11).
 - **13/11/2026** — Implémentation dans `services/auth/` : comptes créateurs seedés
   avec leur `channel_id` (§5), codes 400 et 429 du login ajoutés au contrat (§8),
   alignement attendu d'Upload (D2), état des dépendances mis à jour (§12).
@@ -106,7 +107,11 @@ la même base technique que Catalog.
 
 **Conséquences.**
 
-- Image `python:3.12-slim-bookworm`, comme Catalog, sans `ffmpeg`.
+- Image `python:3.12-slim-bookworm` (Debian), comme Catalog, sans `ffmpeg`. C1 porte
+  sur les outils : chaque dépendance doit s'installer et tourner dans un conteneur
+  Ubuntu. Vérifié le 13/11/2026 dans `ubuntu:24.04` (Python 3.12.3) :
+  `requirements-dev.txt` s'installe depuis des wheels précompilées et les 103 tests
+  passent. L'image `mariadb:11` est elle-même basée sur Ubuntu 24.04.
 - Routes en `def` et non `async def`, comme Catalog : FastAPI les exécute dans un
   pool de threads, donc un hachage Argon2 ne bloque pas les autres requêtes.
 - Le contrat reste la référence : il est écrit à la main, et le schéma généré par
@@ -839,6 +844,13 @@ commun.
   s'il manque une variable obligatoire. Contrairement à Catalog et Upload, aucun secret
   n'a de valeur par défaut, ni dans le code ni dans l'image.
 - Les tables sont créées par `create_all` au démarrage, puis les comptes créateurs.
+
+Vérifié le 13/11/2026 avec `docker compose up --build`, et un mot de passe de base
+contenant `@ : / # %` : `auth-db` puis `auth` passent leur healthcheck, les 8 créateurs
+sont seedés avec leur `channel_id`, et l'inscription, la connexion d'un créateur, `/me`,
+le `409` sur une adresse en pleine chasse, le `429` avec `Retry-After` et le
+`404 Route inconnue` répondent comme dans les tests. Un redémarrage sur la base
+existante relance le seed sans erreur. L'image ne contient aucun outil de test.
 
 ---
 
