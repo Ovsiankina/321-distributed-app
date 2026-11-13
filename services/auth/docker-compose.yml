@@ -20,7 +20,9 @@ services:
       # Publié pour la Gateway (host.docker.internal:8001) tant qu'il n'y a pas de Compose commun.
       - "8001:8001"
     environment:
-      AUTH_DATABASE_URL: mariadb+pymysql://auth:${AUTH_DB_PASSWORD}@auth-db:3306/auth
+      # Le mot de passe passe à part : app/config.py l'ajoute à l'URL sans la relire.
+      AUTH_DATABASE_URL: mariadb+pymysql://auth@auth-db:3306/auth
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
       AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY:?définir AUTH_JWT_PRIVATE_KEY dans .env (voir README)}
     depends_on:
       auth-db:

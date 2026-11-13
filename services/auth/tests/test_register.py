@@ -1,6 +1,6 @@
 import pytest
 
-from conftest import register
+from conftest import login, register
 from gateway_openapi import assert_matches_gateway_schema
 
 REGISTER_PATH = "/api/auth/register"
@@ -89,10 +89,34 @@ def test_unknown_field_returns_400(client):
     assert response.json() == {"detail": "Requête invalide"}
 
 
-@pytest.mark.parametrize("content", [b"{pas du json", b'["alice@example.com"]', b""])
+@pytest.mark.parametrize(
+    "content",
+    [
+        b"{pas du json",
+        b'["alice@example.com"]',
+        b"",
+        # Pas de l'UTF-8 valide : FastAPI lève une HTTPException en anglais.
+        b'{"email": "\xff@x.ch", "password": "secret12"}',
+    ],
+)
 def test_unreadable_body_returns_400(client, content):
     response = client.post(
         REGISTER_PATH, content=content, headers={"Content-Type": "application/json"}
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Requête invalide"}
+
+
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [
+        # Domaine en caractères pleine chasse : IDNA le ramène à example.com.
+        ("alice@example.com", "alice@\uff45xample.com"),
+        # « é » précomposé (NFC) puis « e » suivi de l'accent combinant (NFD).
+        ("jos\u00e9@example.com", "jose\u0301@example.com"),
+    ],
+)
+def test_two_spellings_of_one_address_are_one_account(client, first, second):
+    assert register(client, email=first).status_code == 201
+    assert register(client, email=second).status_code == 409
+    assert login(client, email=second).status_code == 200

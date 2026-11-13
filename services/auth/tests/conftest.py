@@ -40,9 +40,20 @@ def auth_env(tmp_path, monkeypatch):
     monkeypatch.setenv("AUTH_DATABASE_URL", f"sqlite:///{tmp_path / 'auth.db'}")
     monkeypatch.setenv("AUTH_JWT_PRIVATE_KEY", private_key_pem(SIGNING_KEY))
     monkeypatch.setenv("AUTH_FIXTURES_DIR", str(MINI_FIXTURES))
-    for name in ("AUTH_JWT_ISSUER", "AUTH_JWT_AUDIENCE", "AUTH_TOKEN_TTL_HOURS"):
+    for name in (
+        "AUTH_DB_PASSWORD",
+        "AUTH_JWT_ISSUER",
+        "AUTH_JWT_AUDIENCE",
+        "AUTH_TOKEN_TTL_HOURS",
+    ):
         monkeypatch.delenv(name, raising=False)
     _purge_app_modules()
+    yield
+    # Chaque test réimporte app et crée un engine : fermer ses connexions SQLite avant
+    # que pytest nettoie tmp_path (sous Windows, un fichier ouvert reste verrouillé).
+    db = sys.modules.get("app.db")
+    if db is not None:
+        db.engine.dispose()
 
 
 def _start_client():

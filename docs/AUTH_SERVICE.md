@@ -14,6 +14,11 @@
 
 ## Historique des changements
 
+- **13/11/2026** — Corrections après revue du code : limite de login sur une fenêtre
+  glissante, comptée avant le hachage (§9) ; normalisation complète des emails et seed
+  qui déplace les chaînes (§5) ; détails `404`, `405` et corps non UTF-8 en français
+  (§7) ; connexion à la base rendue avant le hachage (D4) ; dépendances de test hors
+  de l'image (§11).
 - **13/11/2026** — Implémentation dans `services/auth/` : comptes créateurs seedés
   avec leur `channel_id` (§5), codes 400 et 429 du login ajoutés au contrat (§8),
   alignement attendu d'Upload (D2), état des dépendances mis à jour (§12).
@@ -94,8 +99,8 @@ la même base technique que Catalog.
 - Le format d'erreur du contrat, `{ "detail": "..." }`, est celui que produit
   `HTTPException` dans FastAPI.
 - Auth peut reprendre ce que Catalog a déjà résolu : l'organisation de `app/`, le
-  Dockerfile, le Compose, et `tests/gateway_openapi.py`, qui valide les réponses
-  contre le contrat.
+  Dockerfile, le Compose, et le module qui valide les réponses contre le contrat,
+  désormais partagé dans `tests/contract/gateway_openapi.py`.
 - `argon2-cffi` et `PyJWT[crypto]` s'installent depuis des paquets précompilés :
   l'image n'a pas besoin de compilateur (C1).
 
@@ -206,7 +211,9 @@ migration.
 **Conséquences.** Une trentaine de millisecondes et 19 MiB par opération. Le pool de
 threads de FastAPI est limité à 40 par défaut, donc au pire environ 760 MiB. C'est
 acceptable à l'échelle de la démo (C6), et une panne mémoire d'Auth ne touche pas le
-visionnage (C3).
+visionnage (C3). Le login lit le hash puis rend sa connexion au pool SQLAlchemy avant
+de hacher : des logins simultanés n'immobilisent pas les connexions dont `/me` et
+l'inscription ont besoin.
 
 **Alternative écartée.** bcrypt : acceptable et très répandu, mais limité à 72 octets
 et moins résistant au GPU. Rien ne justifie de le préférer ici.
@@ -389,8 +396,12 @@ Notes :
   par `/me`. Le risque est accepté à l'échelle de la démo (C6).
 - `password_hash` contient la chaîne PHC complète, 97 caractères avec ces paramètres :
   `$argon2id$v=19$m=19456,t=2,p=1$<sel>$<hash>`.
-- **L'email est normalisé dans le code** (`strip().lower()`) avant d'être stocké ou
-  comparé : `Alice@x.ch` et `alice@x.ch` sont un seul compte.
+- **L'email est normalisé dans le code** avant d'être stocké ou comparé, par la même
+  fonction à l'inscription, au login et au seed : `strip().lower()`, puis la forme
+  normalisée d'`email-validator` (domaine IDNA/UTS-46, partie locale en NFC).
+  `Alice@x.ch`, `alice@ｘ.ch` (pleine chasse) et un `é` composé ou décomposé donnent
+  chacun un seul compte. Une adresse que `email-validator` refuse, comme les `.local`
+  des créateurs, garde le seul `strip().lower()`.
 - **Collation binaire** (`utf8mb4_bin`) sur `email` et `channel_id`. Par défaut,
   MariaDB compare sans tenir compte de la casse et, selon la collation, des accents ;
   SQLite compare octet par octet. Avec la normalisation dans le code, l'égalité est la
@@ -414,6 +425,11 @@ passe commun (`default_password`).
 
 - Un compte absent est créé, avec un hachage par compte : chaque sel est différent.
 - Un compte existant garde son mot de passe et reprend le `channel_id` du fichier.
+- Le fichier fait foi pour les chaînes qu'il liste. Une chaîne tenue par un autre
+  compte lui est d'abord retirée, ce qui permet de renommer un créateur ou d'échanger
+  deux chaînes sans violer `UNIQUE (channel_id)`.
+- Deux écritures d'un même email ne font qu'un compte. Un email avec deux chaînes, ou
+  une chaîne pour deux emails, arrête le démarrage avec un message qui les nomme.
 - Aucun compte n'est supprimé, y compris ceux créés par l'inscription.
 - Les adresses sont en `@stream321.local`, un domaine réservé que l'inscription refuse :
   personne ne peut s'inscrire avec l'adresse d'un créateur. Le login, lui, ne contrôle
@@ -478,19 +494,18 @@ sequenceDiagram
     AU->>AU: valider le corps, normaliser l'email
     alt corps invalide
         AU-->>GW: 400
-    else 10 échecs ou plus en 60 s pour cet email
+    else 10 tentatives dans les 60 dernières secondes pour cet email
         AU-->>GW: 429 + Retry-After
-    else tentative autorisée
+    else tentative autorisée, et comptée
         AU->>DB: SELECT id, password_hash WHERE email = ?
         alt utilisateur inconnu
             DB-->>AU: aucune ligne
-            AU->>AU: vérifier contre un hash factice, compter l'échec
+            AU->>AU: vérifier contre un hash factice
             AU-->>GW: 401 Identifiants incorrects
         else utilisateur connu
             DB-->>AU: ligne
             AU->>AU: argon2.verify(hash, password)
             alt mauvais mot de passe
-                AU->>AU: compter l'échec
                 AU-->>GW: 401 Identifiants incorrects
             else mot de passe correct
                 AU->>AU: remettre le compteur à zéro, signer le JWT
@@ -601,7 +616,7 @@ Cette section précise seulement ce que le contrat laisse à l'implémentation.
 
 Le `502` vient de la Gateway. Les `400` et `429` du login sont ajoutés au contrat par
 cette branche (§8). Les routes des favoris ne sont pas encore servies : Auth y répond
-`404` jusqu'à la story favoris.
+`404 Route inconnue` jusqu'à la story favoris.
 
 - Auth sert les **chemins complets** `/api/auth/*`, comme Catalog sert
   `/api/catalog/*` : la Gateway ne réécrit pas le chemin, et les tests d'intégration
@@ -637,7 +652,9 @@ reconnexion.
 | 400 | `Requête invalide` | JSON illisible ou champ inconnu |
 | 401 | `Identifiants incorrects` | Login : email inconnu ou mauvais mot de passe |
 | 401 | `Authentification requise` | Header absent, token invalide ou expiré |
+| 404 | `Route inconnue` | Chemin qu'Auth ne sert pas, dont les favoris pour l'instant |
 | 404 | `Vidéo introuvable` | Favori sur une vidéo absente du catalogue |
+| 405 | `Méthode non autorisée` | Méthode non servie sur un chemin connu, avec `Allow` |
 | 409 | `Cet email est déjà utilisé` | Inscription |
 | 429 | `Trop de tentatives, réessayez plus tard` | Login, avec `Retry-After` |
 | 502 | `Service indisponible` | Favoris, Catalog injoignable depuis Auth |
@@ -659,6 +676,11 @@ le vérifient (§10) :
 3. **`sub` doit être une chaîne** (§4).
 4. **Ne pas recopier le `CORSMiddleware` de Catalog.** Le navigateur ne parle qu'à la
    Gateway, Auth n'a pas besoin de CORS.
+5. **Starlette et FastAPI écrivent certains `detail` eux-mêmes, en anglais** :
+   `Not Found`, `Method Not Allowed`, et `There was an error parsing the body` pour un
+   corps JSON qui n'est pas de l'UTF-8 valide. Un handler `HTTPException` les traduit
+   (`Route inconnue`, `Méthode non autorisée`, `Requête invalide`) et laisse passer
+   tels quels les `detail` levés par les routes.
 
 ### Côté frontend
 
@@ -696,7 +718,7 @@ du code avant la fusion.
 | Fuite de la base | Argon2id, 19 MiB, t=2, p=1, sel aléatoire par mot de passe (D4) |
 | Énumération par le login | Corps, statut et durée identiques pour un email inconnu et un mauvais mot de passe (§6) |
 | Énumération par l'inscription | Acceptée : E1-03 et le contrat demandent `Cet email est déjà utilisé` |
-| Force brute | 10 échecs par email sur 60 s, puis `429` et `Retry-After` |
+| Force brute | 10 tentatives par email sur toute fenêtre glissante de 60 s, puis `429` et `Retry-After` |
 | Épuisement mémoire par Argon2 | Pool de 40 threads, environ 760 MiB au pire. Accepté (D4) |
 | Fabrication de token | Ed25519 : Upload vérifie mais ne peut pas émettre (D2) |
 | Confusion d'algorithme | `algorithms=["EdDSA"]` imposé, `alg: none` et HS256 rejetés (§4) |
@@ -711,7 +733,14 @@ La limite est **par email et non par IP**. Le contrat ne prévoit pas de transme
 l'IP du client : Auth ne voit que celle de la Gateway, et un compteur par IP mettrait
 tous les utilisateurs dans le même compteur.
 
-- Seuls les **échecs** comptent, et un succès remet le compteur à zéro.
+- La tentative est **comptée avant le hachage**, sous le même verrou que le contrôle.
+  Compter après laisserait des requêtes simultanées passer toutes le contrôle avant
+  le premier échec enregistré, bien au-delà de 10 essais.
+- Un succès remet le compteur à zéro : seuls les **échecs** restent comptés.
+- La fenêtre est **glissante** : le compteur garde l'instant de chaque tentative, et
+  une place se libère quand la plus ancienne a plus de 60 s. Une fenêtre fixe, ouverte
+  au premier échec, laissait passer 19 essais en 0,1 s autour de sa fin.
+  `Retry-After` donne le temps jusqu'à cette place.
 - Un email inconnu compte comme un email connu : un `429` ne révèle donc pas si un
   compte existe.
 - Le `429` répond sans hacher, donc sans coût mémoire.
@@ -727,21 +756,22 @@ l'inscription n'est pas limitée.
 ## 10. Tests
 
 Ils répondent à E1-03 (*« Tests unitaires sur l'inscription, la vérification du mot de
-passe et l'émission du token »*) et à C4. Les 79 tests de
+passe et l'émission du token »*) et à C4. Les 103 tests de
 [`services/auth/tests/`](../services/auth/tests/) tournent, comme pour Catalog, sur un
 SQLite temporaire, avec une clé générée à la volée. Chaque réponse JSON est validée
 contre `gateway.openapi.yaml`, avec le même outil que Catalog.
 
 | Fichier | Ce qui est vérifié |
 |---|---|
-| `test_passwords.py` | Bon et mauvais mot de passe, sel aléatoire, paramètres `m=19456,t=2,p=1` |
-| `test_register.py` | `201` avec le token et jamais le hash ; `409` quelle que soit la casse ; bornes 6 et 128 ; `400` et non `422`, avec le bon message ; `@example.test` accepté, `.local` refusé |
-| `test_login.py` | Créateur seedé ; email insensible à la casse ; email inconnu et mauvais mot de passe : corps **identiques octet par octet**, et hash factice bien vérifié ; corps invalides en `400` |
-| `test_rate_limit.py` | `429` au 11ᵉ essai, sans hacher, même avec le bon mot de passe ; remise à zéro après un succès ; email inconnu compté ; fenêtre et purge avec une horloge injectée |
+| `test_passwords.py` | Bon et mauvais mot de passe, sel aléatoire, paramètres `m=19456,t=2,p=1` ; hash illisible refusé sans exception |
+| `test_register.py` | `201` avec le token et jamais le hash ; `409` quelle que soit la casse, et pour un domaine en pleine chasse ou un accent décomposé ; bornes 6 et 128 ; `400` et non `422`, avec le bon message, y compris pour un corps non UTF-8 ; `@example.test` accepté, `.local` refusé |
+| `test_login.py` | Créateur seedé ; email insensible à la casse ; email inconnu et mauvais mot de passe : corps **identiques octet par octet**, et hash factice bien vérifié ; corps invalides ou non UTF-8 en `400` ; hash illisible en `401` compté |
+| `test_rate_limit.py` | `429` au 11ᵉ essai, sans hacher, même avec le bon mot de passe ; remise à zéro après un succès ; email inconnu compté ; 30 requêtes simultanées : exactement 10 `401` ; tentative comptée avant le hachage ; fenêtre glissante, pas de rafale à sa fin, et purge avec une horloge injectée |
+| `test_errors.py` | `404 Route inconnue` et `405 Méthode non autorisée` en français ; les `detail` et headers des routes passent tels quels |
 | `test_me.py` | `200` avec `{id, email}` ; `401` sans header, avec un autre schéma, et pour dix tokens invalides (expiré, autre clé, `iss` ou `aud` étranger, sans `exp`, `sub` non numérique, payload modifié, `alg: none`, HS256, illisible) ; tolérance de 30 s |
 | `test_tokens.py` | Exactement `iss`, `sub`, `aud`, `iat`, `exp` ; `sub` en chaîne ; `exp - iat` ; en-tête EdDSA ; durée réglable |
-| `test_seed.py` | Les 8 créateurs du vrai fichier ; normalisation ; sels distincts ; idempotence sans re-hachage ; mise à jour du `channel_id` ; aucune suppression |
-| `test_config.py` | Arrêt sans base ni clé, avec une clé illisible ou non Ed25519, avec une durée invalide ; valeurs par défaut |
+| `test_seed.py` | Les 8 créateurs du vrai fichier ; normalisation ; sels distincts ; idempotence sans re-hachage ; mise à jour du `channel_id` ; chaîne déplacée vers un compte renommé, échange de deux chaînes ; deux écritures d'un email fusionnées ; fichier contradictoire refusé sans rien écrire ; aucune suppression |
+| `test_config.py` | Arrêt sans base ni clé, avec une URL ou une clé illisible, une clé non Ed25519, une durée invalide ; valeurs par défaut, y compris pour une variable vide ; mot de passe de la base avec `@ : / # %` |
 | `test_health.py`, `test_db_engine.py` | `503` si la base tombe ; `pool_pre_ping` et collation binaire sur MariaDB |
 | `test_openapi_contract.py` | Contrat valide ; codes du contrat égaux à ceux du service |
 
@@ -773,7 +803,9 @@ la clé et les variables.
 
 ```text
 services/auth/
-├── Dockerfile, docker-compose.yml, .env.example, requirements.txt, README.md
+├── Dockerfile, docker-compose.yml, .env.example, README.md
+├── requirements.txt      # dépendances de l'image
+├── requirements-dev.txt  # + outils de test, installés par la CI seulement
 ├── fixtures/users.json   # les 8 comptes créateurs (§5)
 ├── app/
 │   ├── main.py, config.py, db.py, models.py, schemas.py
@@ -795,7 +827,8 @@ commun.
 
 | Variable | Défaut | Notes |
 |---|---|---|
-| `AUTH_DATABASE_URL` | **obligatoire** | URL SQLAlchemy de `auth-db` |
+| `AUTH_DATABASE_URL` | **obligatoire** | URL SQLAlchemy de `auth-db`, sans mot de passe |
+| `AUTH_DB_PASSWORD` | aucun | Ajouté à l'URL sans la relire : tous les caractères sont permis |
 | `AUTH_JWT_PRIVATE_KEY` | **obligatoire** | Clé privée Ed25519, PEM, générée une fois, hors de git |
 | `AUTH_JWT_ISSUER`, `AUTH_JWT_AUDIENCE` | `stream321-auth`, `stream321-api` | Doivent correspondre à ce qu'attend Upload |
 | `AUTH_TOKEN_TTL_HOURS` | `1` | Heures entières |

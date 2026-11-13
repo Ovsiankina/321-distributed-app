@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "services/auth/**"
+      - "tests/contract/**"
       - "docs/api/gateway.openapi.yaml"
       - ".github/workflows/unit-auth.yml"
   workflow_dispatch:
@@ -19,7 +20,7 @@ jobs:
           python-version: "3.12"
 
       - name: Installer les dépendances
-        run: python -m pip install -r services/auth/requirements.txt
+        run: python -m pip install -r services/auth/requirements-dev.txt
 
       - name: pytest
         working-directory: services/auth

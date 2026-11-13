@@ -38,7 +38,7 @@ Tests (SQLite temporaire **uniquement** dans pytest) :
 pytest
 ```
 
-Les réponses JSON des routes catalog sont validées contre le contrat gateway (`docs/api/gateway.openapi.yaml`) via `jsonschema` et `prance` (voir `tests/gateway_openapi.py`).
+Les réponses JSON des routes catalog sont validées contre le contrat gateway (`docs/api/gateway.openapi.yaml`) via `jsonschema` et `prance` (voir [`tests/contract/gateway_openapi.py`](../../tests/contract/gateway_openapi.py), partagé avec Auth).
 
 ### Fixtures de test et recherche `internet`
 

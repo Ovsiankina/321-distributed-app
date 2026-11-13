@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from conftest import FULL_FIXTURES, SEED_PASSWORD, login, register
 
 
@@ -90,3 +92,78 @@ def test_seed_never_deletes_accounts(client, tmp_path):
     register(client)
     _seed(_write_fixture(tmp_path, []))
     assert {"alice@example.com", "createur@stream321.local"} <= set(_users())
+
+
+def _channels():
+    return {email: user.channel_id for email, user in _users().items()}
+
+
+def test_seed_moves_a_channel_to_a_renamed_creator(client, tmp_path):
+    _seed(
+        _write_fixture(
+            tmp_path,
+            [
+                {
+                    "email": "createur-renomme@stream321.local",
+                    "channel_id": "UCcreateurDeTest00000001",
+                },
+                {
+                    "email": "autre.createur@stream321.local",
+                    "channel_id": "UCcreateurDeTest00000002",
+                },
+            ],
+        )
+    )
+    channels = _channels()
+    assert channels["createur-renomme@stream321.local"] == "UCcreateurDeTest00000001"
+    # L'ancien compte reste, sans chaîne.
+    assert channels["createur@stream321.local"] is None
+
+
+def test_seed_swaps_the_channels_of_two_creators(client, tmp_path):
+    _seed(
+        _write_fixture(
+            tmp_path,
+            [
+                {
+                    "email": "createur@stream321.local",
+                    "channel_id": "UCcreateurDeTest00000002",
+                },
+                {
+                    "email": "autre.createur@stream321.local",
+                    "channel_id": "UCcreateurDeTest00000001",
+                },
+            ],
+        )
+    )
+    channels = _channels()
+    assert channels["createur@stream321.local"] == "UCcreateurDeTest00000002"
+    assert channels["autre.createur@stream321.local"] == "UCcreateurDeTest00000001"
+
+
+def test_seed_merges_two_spellings_of_one_email(client, tmp_path):
+    entry = {"email": "New@stream321.local", "channel_id": "UCnouveau"}
+    _seed(_write_fixture(tmp_path, [entry, {**entry, "email": "new@stream321.local"}]))
+    assert _channels()["new@stream321.local"] == "UCnouveau"
+
+
+@pytest.mark.parametrize(
+    "users",
+    [
+        [
+            {"email": "new@stream321.local", "channel_id": "UCun"},
+            {"email": "New@stream321.local", "channel_id": "UCdeux"},
+        ],
+        [
+            {"email": "un@stream321.local", "channel_id": "UCmeme"},
+            {"email": "deux@stream321.local", "channel_id": "UCmeme"},
+        ],
+    ],
+)
+def test_contradictory_fixture_is_rejected_with_a_clear_message(
+    client, tmp_path, users
+):
+    before = _channels()
+    with pytest.raises(ValueError, match="users.json"):
+        _seed(_write_fixture(tmp_path, users))
+    assert _channels() == before

@@ -1,5 +1,9 @@
+import logging
+
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
+
+logger = logging.getLogger(__name__)
 
 # Configuration minimale recommandée par OWASP : 19 MiB, 2 itérations, parallélisme 1.
 _hasher = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1)
@@ -17,6 +21,11 @@ def verify_password(password_hash: str, password: str) -> bool:
     try:
         return _hasher.verify(password_hash, password)
     except VerifyMismatchError:
+        return False
+    except (InvalidHashError, VerificationError):
+        # Hash corrompu ou d'un autre algorithme : refusé comme un mauvais mot de
+        # passe, pour répondre 401 et non 500.
+        logger.warning("password_hash illisible : connexion refusée")
         return False
 
 

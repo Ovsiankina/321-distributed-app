@@ -5,6 +5,8 @@ from pathlib import Path
 from cryptography.exceptions import UnsupportedAlgorithm
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from sqlalchemy.engine import URL, make_url
+from sqlalchemy.exc import ArgumentError
 
 SERVICE_ROOT = Path(__file__).resolve().parents[1]
 
@@ -15,7 +17,7 @@ class ConfigError(ValueError):
 
 @dataclass(frozen=True)
 class Settings:
-    database_url: str
+    database_url: URL
     jwt_private_key: Ed25519PrivateKey
     jwt_issuer: str
     jwt_audience: str
@@ -28,6 +30,22 @@ def _required(name: str) -> str:
     if not value:
         raise ConfigError(f"{name} est obligatoire")
     return value
+
+
+def _database_url() -> URL:
+    raw = _required("AUTH_DATABASE_URL")
+    try:
+        url = make_url(raw)
+    except ArgumentError as exc:
+        raise ConfigError(
+            "AUTH_DATABASE_URL n'est pas une URL SQLAlchemy lisible"
+        ) from exc
+    password = os.environ.get("AUTH_DB_PASSWORD")
+    if password:
+        # Passé à part, le mot de passe n'est jamais relu comme une URL :
+        # @, :, /, # ou % n'y déplacent pas l'hôte ni la base.
+        url = url.set(password=password)
+    return url
 
 
 def _private_key() -> Ed25519PrivateKey:
@@ -56,13 +74,13 @@ def _token_ttl_hours() -> int:
 
 def load_settings() -> Settings:
     return Settings(
-        database_url=_required("AUTH_DATABASE_URL"),
+        database_url=_database_url(),
         jwt_private_key=_private_key(),
         jwt_issuer=os.environ.get("AUTH_JWT_ISSUER") or "stream321-auth",
         jwt_audience=os.environ.get("AUTH_JWT_AUDIENCE") or "stream321-api",
         token_ttl_hours=_token_ttl_hours(),
         fixtures_dir=Path(
-            os.environ.get("AUTH_FIXTURES_DIR", str(SERVICE_ROOT / "fixtures"))
+            os.environ.get("AUTH_FIXTURES_DIR") or SERVICE_ROOT / "fixtures"
         ),
     )
 

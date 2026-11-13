@@ -1,9 +1,26 @@
-from email_validator import validate_email
+from email_validator import EmailNotValidError, validate_email
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
+def _validated_email(value: str) -> str:
+    # test_environment accepte les domaines .test des tests d'intégration.
+    # Les domaines réservés comme .local restent refusés : seul le seed les utilise.
+    result = validate_email(
+        value.strip().lower(), check_deliverability=False, test_environment=True
+    )
+    # Forme normalisée : domaine IDNA (UTS-46), partie locale en NFC. Deux écritures
+    # d'une même adresse donnent la même chaîne.
+    return result.normalized
+
+
 def normalize_email(value: str) -> str:
-    return value.strip().lower()
+    """Email tel qu'il est stocké et comparé, à l'inscription, au login et au seed."""
+    try:
+        return _validated_email(value)
+    except EmailNotValidError:
+        # Le login ne contrôle pas le format, et validate_email refuse les adresses
+        # .local des créateurs seedés.
+        return value.strip().lower()
 
 
 class RegisterRequest(BaseModel):
@@ -15,11 +32,7 @@ class RegisterRequest(BaseModel):
     @field_validator("email")
     @classmethod
     def check_email(cls, value: str) -> str:
-        email = normalize_email(value)
-        # test_environment accepte les domaines .test des tests d'intégration.
-        # Les domaines réservés comme .local restent refusés : seul le seed les utilise.
-        validate_email(email, check_deliverability=False, test_environment=True)
-        return email
+        return _validated_email(value)
 
 
 class LoginRequest(BaseModel):

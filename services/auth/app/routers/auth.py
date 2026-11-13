@@ -1,6 +1,7 @@
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -22,10 +23,10 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 _bearer = HTTPBearer(auto_error=False)
 
 
-def _token_response(user: User) -> TokenResponse:
+def _token_response(user_id: int, email: str) -> TokenResponse:
     return TokenResponse(
-        token=issue_token(user.id),
-        email=user.email,
+        token=issue_token(user_id),
+        email=email,
         expires_in_hours=settings.token_ttl_hours,
     )
 
@@ -57,33 +58,42 @@ def register(body: RegisterRequest, db: Session = Depends(get_db)):
     try:
         # La contrainte UNIQUE tranche : pas de SELECT préalable, donc pas de
         # course entre deux inscriptions simultanées.
+        db.flush()
+        # Lu avant le commit, qui expire l'objet : après, il coûterait un SELECT.
+        user_id = user.id
         db.commit()
     except IntegrityError:
         db.rollback()
         raise HTTPException(
             status_code=409, detail="Cet email est déjà utilisé"
         ) from None
-    return _token_response(user)
+    return _token_response(user_id, body.email)
 
 
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
     email = normalize_email(body.email)
-    retry_after = login_limiter.retry_after(email)
+    # Compté avant de hacher : des requêtes simultanées ne passent pas toutes le
+    # contrôle avant que le premier échec soit enregistré.
+    retry_after = login_limiter.acquire(email)
     if retry_after:
         raise HTTPException(
             status_code=429,
             detail="Trop de tentatives, réessayez plus tard",
             headers={"Retry-After": str(retry_after)},
         )
-    user = db.query(User).filter(User.email == email).one_or_none()
-    if user is None:
+    account = db.execute(
+        select(User.id, User.password_hash).where(User.email == email)
+    ).one_or_none()
+    # Rend la connexion au pool avant le hachage Argon2, qui dure des dizaines de ms.
+    db.close()
+    if account is None:
         verify_dummy_password(body.password)
-    if user is None or not verify_password(user.password_hash, body.password):
-        login_limiter.record_failure(email)
+    if account is None or not verify_password(account.password_hash, body.password):
         raise HTTPException(status_code=401, detail="Identifiants incorrects")
     login_limiter.reset(email)
-    return _token_response(user)
+    # La comparaison est binaire : l'email normalisé est celui qui est stocké.
+    return _token_response(account.id, email)
 
 
 @router.get("/me", response_model=UserResponse)

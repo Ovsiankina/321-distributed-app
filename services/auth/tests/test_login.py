@@ -74,11 +74,36 @@ def test_malformed_body_returns_400(client, payload, detail):
     assert_matches_gateway_schema(response.json(), LOGIN_PATH, "post", "400")
 
 
-def test_unreadable_body_returns_400(client):
+@pytest.mark.parametrize(
+    "content",
+    [b"{pas du json", b'{"email": "\xff@x.ch", "password": "abcdef"}'],
+)
+def test_unreadable_body_returns_400(client, content):
     response = client.post(
         LOGIN_PATH,
-        content=b"{pas du json",
+        content=content,
         headers={"Content-Type": "application/json"},
     )
     assert response.status_code == 400
     assert response.json() == {"detail": "Requête invalide"}
+
+
+def test_unreadable_password_hash_is_a_failed_login(client):
+    from app.db import SessionLocal
+    from app.models import User
+
+    register(client)
+    db = SessionLocal()
+    try:
+        db.query(User).filter(User.email == "alice@example.com").update(
+            {"password_hash": "pas un hash argon2"}
+        )
+        db.commit()
+    finally:
+        db.close()
+    for _ in range(10):
+        response = login(client)
+        assert response.status_code == 401
+        assert response.json() == {"detail": "Identifiants incorrects"}
+    # Ces échecs sont comptés comme les autres.
+    assert login(client).status_code == 429
