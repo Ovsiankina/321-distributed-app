@@ -1,0 +1,62 @@
+.watch-player {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  background: black;
+}
+
+.watch-title {
+  margin-top: 16px;
+}
+
+.watch-description {
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.watch-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.watch-tag {
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  font-size: 0.85rem;
+}
+
+.watch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  margin: 12px 0 16px;
+}
+
+.watch-actions label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.watch-actions select {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--text);
+}
+
+.watch-actions button {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  /* Same as the default button text under color-scheme: dark (index.css); kept for themes without it. */
+  color: white;
+  cursor: pointer;
+}
