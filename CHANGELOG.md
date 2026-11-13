@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Contrat Gateway 0.3.0 : `POST /api/auth/login` répond aussi 400 (corps invalide) et 429 (10 échecs en 60 s pour un même email, header `Retry-After`). Les exemples de `expires_in_hours` passent à 1.
+
 ### Fixed
 
 - Le catalog borne `ffmpeg` à 30 s lors de la génération des vignettes, pour qu'un MP4 bloquant ne fige plus le démarrage.
