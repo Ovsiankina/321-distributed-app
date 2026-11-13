@@ -31,9 +31,19 @@ describe('request on 401', () => {
     expect(loggedOut).toHaveBeenCalledOnce()
   })
 
-  it('does not report a logout for a failed login without a token', async () => {
+  it('keeps the session when a login fails with a token stored', async () => {
+    setToken('valid')
     respond(401, { detail: 'Identifiants incorrects' })
     await expect(api.login('a@b.ch', 'wrong')).rejects.toThrow('Identifiants incorrects')
+    expect(getToken()).toBe('valid')
     expect(loggedOut).not.toHaveBeenCalled()
+  })
+
+  it('does not send the token to login', async () => {
+    setToken('valid')
+    respond(200, { token: 'new', email: 'a@b.ch', expires_in_hours: 24 })
+    await api.login('a@b.ch', 'right')
+    const init = vi.mocked(fetch).mock.calls[0][1]
+    expect(new Headers(init?.headers).has('Authorization')).toBe(false)
   })
 })

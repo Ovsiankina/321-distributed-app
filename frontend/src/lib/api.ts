@@ -20,10 +20,12 @@ export function onUnauthorized(handler: () => void): void {
   handleUnauthorized = handler
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+// `authed` routes are the bearerAuth ones in the contract: only they carry the token, and only
+// their 401 means a rejected session (login answers 401 for a wrong password).
+async function request<T>(path: string, init: RequestInit = {}, authed = false): Promise<T> {
   const headers = new Headers(init.headers)
   if (init.body) headers.set('Content-Type', 'application/json')
-  const token = getToken()
+  const token = authed ? getToken() : null
   if (token) headers.set('Authorization', `Bearer ${token}`)
 
   const response = await fetch(path, { ...init, headers })
@@ -61,14 +63,17 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
-  me: () => request<User>('/api/auth/me'),
-  favorites: () => request<{ video_ids: string[]; videos: Video[] }>('/api/auth/favorites'),
+  me: () => request<User>('/api/auth/me', {}, true),
+  favorites: () =>
+    request<{ video_ids: string[]; videos: Video[] }>('/api/auth/favorites', {}, true),
   addFavorite: (id: string) =>
-    request<{ ok: boolean; video_id: string }>(`/api/auth/favorites/${encodeURIComponent(id)}`, {
-      method: 'POST',
-    }),
+    request<{ ok: boolean; video_id: string }>(
+      `/api/auth/favorites/${encodeURIComponent(id)}`,
+      { method: 'POST' },
+      true,
+    ),
   removeFavorite: (id: string) =>
-    request<void>(`/api/auth/favorites/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    request<void>(`/api/auth/favorites/${encodeURIComponent(id)}`, { method: 'DELETE' }, true),
 }
 
 export function streamUrl(videoId: string, quality: string): string {

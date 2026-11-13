@@ -11,10 +11,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (getToken() === null) return
+    // Only a 401 (handled in request) drops the token: a 404/502 at boot must not end a valid session.
     api
       .me()
       .then(setUser)
-      .catch(() => setToken(null))
+      .catch(() => {})
       .finally(() => setReady(true))
   }, [])
 

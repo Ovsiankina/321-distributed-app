@@ -32,7 +32,7 @@ function AccountIcon() {
 }
 
 export function TopBar() {
-  const { user, logout } = useAuth()
+  const { user, ready, logout } = useAuth()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState<string | null>(null)
@@ -82,11 +82,11 @@ export function TopBar() {
                 Déconnexion
               </button>
             </>
-          ) : (
+          ) : ready ? (
             <Link to="/login" className="top-bar-icon-link" aria-label="Compte" title="Compte">
               <AccountIcon />
             </Link>
-          )}
+          ) : null}
         </nav>
       </header>
       {/* Outside the header: its backdrop-filter would make it the toast's containing block. */}
