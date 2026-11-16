@@ -1,32 +1,32 @@
-# React + TypeScript + Vite
+# Frontend Stream321
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Interface React 19 + TypeScript, construite avec Vite. Toutes les routes appelées
+suivent le contrat de la Gateway ([`docs/api/gateway.openapi.yaml`](../docs/api/gateway.openapi.yaml)).
 
-Currently, two official plugins are available:
+## Lancer en local
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Tant que la Gateway (E0-04) n'existe pas, le serveur de dev Vite redirige `/api`
+vers le service catalogue sur `http://127.0.0.1:8002` (voir `vite.config.ts`).
+Les routes `/api/auth/*` et `/api/stream/*` répondent donc 404 : la connexion,
+les favoris et la lecture vidéo ne fonctionnent qu'avec la Gateway.
+
+## Scripts
+
+| Commande        | Rôle                                   |
+| --------------- | -------------------------------------- |
+| `npm run dev`   | serveur de développement               |
+| `npm test`      | tests unitaires (vitest) de `src/lib/` |
+| `npm run lint`  | analyse oxlint                         |
+| `npm run build` | vérification TypeScript + build        |
+
+## Structure
+
+- `src/components/` : composants réutilisables, chacun avec son CSS.
+- `src/pages/` : une page par route.
+- `src/auth/` : contexte de session (JWT stocké dans `localStorage`).
+- `src/lib/` : logique pure et client de l'API, testée avec vitest.
