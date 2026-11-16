@@ -53,7 +53,7 @@ export function TopBar() {
       <header className="top-bar">
         <Link to="/" className="top-bar-brand">
           <span className="top-bar-logo">S</span>
-          Stream321
+          321-distributed-app
         </Link>
         <form className="top-bar-search-form" role="search" onSubmit={handleSearchSubmit}>
           <input

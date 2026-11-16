@@ -1,4 +1,4 @@
-# Frontend Stream321
+# Frontend 321-distributed-app
 
 Interface React 19 + TypeScript, construite avec Vite. Toutes les routes appelées
 suivent le contrat de la Gateway ([`docs/api/gateway.openapi.yaml`](../docs/api/gateway.openapi.yaml)).

@@ -2,7 +2,7 @@ import type { User, Video } from './types'
 
 // Every route follows the Gateway contract (docs/api/gateway.openapi.yaml).
 
-const TOKEN_KEY = 'stream321_token'
+const TOKEN_KEY = '321-distributed-app_token'
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
