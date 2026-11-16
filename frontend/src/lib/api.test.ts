@@ -41,7 +41,7 @@ describe('request on 401', () => {
 
   it('does not send the token to login', async () => {
     setToken('valid')
-    respond(200, { token: 'new', email: 'a@b.ch', expires_in_hours: 24 })
+    respond(200, { token: 'new', email: 'a@b.ch', expires_in_hours: 1 })
     await api.login('a@b.ch', 'right')
     const init = vi.mocked(fetch).mock.calls[0][1]
     expect(new Headers(init?.headers).has('Authorization')).toBe(false)
