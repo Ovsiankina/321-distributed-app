@@ -1,6 +1,6 @@
 # API Gateway
 
-> **Statut : partiel (E0-05, E1-05).** Les sections remplies ci-dessous sont stables.
+> **Statut : partiel (E0-05, E1-05, E0-09).** Les sections remplies ci-dessous sont stables.
 > Tout ce qui reste en _TODO_ n'est pas défini.
 >
 > **Ne pas implémenter une section en _TODO_. Ça cassera.** Attendre qu'elle
@@ -31,7 +31,7 @@ Méthode, chemin et codes seulement. Les schémas et les exemples sont dans le f
 | GET | `/health` | Réponse Gateway | 200 |
 | GET | `/api/home` | Réponse Gateway, stub (`sections` vide) | 200, 502 |
 | POST | `/api/auth/register` | Crée un compte, retourne un JWT | 201, 400, 409, 502 |
-| POST | `/api/auth/login` | Retourne un JWT | 200, 401, 502 |
+| POST | `/api/auth/login` | Retourne un JWT | 200, 400, 401, 429, 502 |
 | GET | `/api/auth/me` | Profil, JWT requis | 200, 401, 502 |
 | GET | `/api/auth/favorites` | Liste des favoris, JWT requis | 200, 401, 502 |
 | POST | `/api/auth/favorites/{video_id}` | Ajoute un favori, JWT requis | 201, 401, 404, 502 |
@@ -52,13 +52,16 @@ _TODO : pour chaque endpoint restant, définir la méthode, le chemin, le schém
 
 | Code | `detail` | Cas |
 |------|----------|-----|
-| 400 | `Email invalide` | Corps d'inscription invalide |
+| 400 | `Email invalide` | Champ `email` invalide ou absent (inscription, login) |
+| 400 | `Mot de passe invalide` | Champ `password` invalide ou absent (inscription, login) |
+| 400 | `Requête invalide` | JSON illisible ou champ inconnu (inscription, login) |
 | 400 | `Qualité inconnue (360p ou 720p)` | Query `quality` du streaming |
 | 401 | `Authentification requise` | JWT absent ou invalide sur `/me` et les favoris |
 | 401 | `Identifiants incorrects` | Login |
 | 404 | `Route inconnue` | Préfixe non géré par la Gateway |
 | 404 | `Vidéo introuvable` | Vidéo, vignette ou fichier MP4 inconnu |
 | 409 | `Cet email est déjà utilisé` | Inscription |
+| 429 | `Trop de tentatives, réessayez plus tard` | Login : 10 échecs en 60 s pour un même email, header `Retry-After` |
 | 502 | `Service indisponible` | Microservice injoignable |
 
 Le streaming répond aussi `206` quand la requête porte un header `Range`. Ce n'est pas une erreur.

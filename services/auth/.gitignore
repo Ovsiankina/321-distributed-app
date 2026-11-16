@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+
+# Secrets : mot de passe de la base et clé privée de signature.
+.env
+secrets/
+*.pem

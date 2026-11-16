@@ -15,7 +15,7 @@ export function setToken(token: string | null): void {
 
 let handleUnauthorized = () => {}
 
-// Lets the auth context log out when the server rejects the stored token (expired after 24 h).
+// Lets the auth context log out when the server rejects the stored token (expired after 1 h).
 export function onUnauthorized(handler: () => void): void {
   handleUnauthorized = handler
 }

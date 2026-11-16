@@ -1,12 +1,13 @@
 openapi: 3.0.3
 info:
   title: API Gateway
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Contrat public de la Gateway.
 
     E0-05 : `GET /health`, stub `GET /api/home`, proxy `/api/subtitles/*`.
     E1-05 : auth, catalogue, recherche, streaming MP4.
+    E0-09 : codes 400 et 429 de `POST /api/auth/login`.
 
     Header `Authorization: Bearer <JWT>` requis sur
     `GET /api/auth/me` et `GET|POST|DELETE /api/auth/favorites/*`.
@@ -96,7 +97,7 @@ paths:
               example:
                 token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
                 email: alice@example.com
-                expires_in_hours: 24
+                expires_in_hours: 1
         "400":
           description: Email ou mot de passe invalide
           content:
@@ -141,7 +142,15 @@ paths:
               example:
                 token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
                 email: alice@example.com
-                expires_in_hours: 24
+                expires_in_hours: 1
+        "400":
+          description: Corps invalide (JSON illisible, champ manquant, mal typé ou inconnu)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Mot de passe invalide
         "401":
           description: Identifiants incorrects
           content:
@@ -150,6 +159,22 @@ paths:
                 $ref: "#/components/schemas/ErrorDetail"
               example:
                 detail: Identifiants incorrects
+        "429":
+          description: |
+            10 échecs de connexion en 60 secondes pour cet email. Toute tentative
+            est refusée, même avec le bon mot de passe, jusqu'à la fin de la fenêtre.
+          headers:
+            Retry-After:
+              description: Secondes à attendre avant la prochaine tentative
+              schema:
+                type: integer
+              example: 42
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Trop de tentatives, réessayez plus tard
         "502":
           $ref: "#/components/responses/BadGateway"
 
@@ -666,7 +691,7 @@ components:
           format: email
         expires_in_hours:
           type: integer
-          example: 24
+          example: 1
 
     User:
       type: object
