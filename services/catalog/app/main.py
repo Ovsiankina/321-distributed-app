@@ -21,7 +21,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="Stream321 Catalog", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="321-distributed-app Catalog", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

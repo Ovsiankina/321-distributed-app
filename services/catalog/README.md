@@ -1,6 +1,6 @@
 # Microservice Catalog
 
-Métadonnées vidéos, recherche et vignettes pour Stream321. Les routes publiques suivent le contrat gateway (`/api/catalog/*`).
+Métadonnées vidéos, recherche et vignettes pour 321-distributed-app. Les routes publiques suivent le contrat gateway (`/api/catalog/*`).
 
 Le catalogue est persisté dans **MariaDB 11** (conteneur `catalog-db`). Les vignettes JPEG restent sur disque (`{CATALOG_DATA_DIR}/thumbs/`).
 
