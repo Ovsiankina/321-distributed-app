@@ -10,6 +10,7 @@ from .routers import upload
 
 def prepare_runtime() -> None:
     config.catalog_timeout_seconds()
+    config.load_jwt_settings()
     config.data_dir().mkdir(parents=True, exist_ok=True)
 
 
@@ -19,7 +20,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="Stream321 Upload", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="321-distributed-app Upload", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

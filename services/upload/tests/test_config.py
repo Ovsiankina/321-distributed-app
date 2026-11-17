@@ -21,3 +21,10 @@ def test_prepare_runtime_rejects_invalid_catalog_timeout(monkeypatch, tmp_path):
     monkeypatch.setenv("UPLOAD_CATALOG_TIMEOUT_SECONDS", "abc")
     with pytest.raises(ConfigError, match="UPLOAD_CATALOG_TIMEOUT_SECONDS"):
         prepare_runtime()
+
+
+def test_prepare_runtime_requires_jwt_public_key(monkeypatch, tmp_path):
+    monkeypatch.setenv("UPLOAD_DATA_DIR", str(tmp_path / "incoming"))
+    monkeypatch.delenv("UPLOAD_JWT_PUBLIC_KEY", raising=False)
+    with pytest.raises(ConfigError, match="UPLOAD_JWT_PUBLIC_KEY"):
+        prepare_runtime()

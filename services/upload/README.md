@@ -16,7 +16,9 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 export UPLOAD_DATA_DIR=/tmp/upload-data
-export UPLOAD_JWT_SECRET=dev-upload-jwt-secret   # aligner sur le service auth
+export UPLOAD_JWT_PUBLIC_KEY="$(openssl pkey -in /chemin/auth-private.pem -pubout)"  # clé publique Ed25519 du service auth
+export UPLOAD_JWT_ISSUER=stream321-auth          # défaut auth
+export UPLOAD_JWT_AUDIENCE=stream321-api         # défaut auth
 export UPLOAD_CATALOG_URL=http://127.0.0.1:8002  # catalog doit répondre 200 sur /health
 uvicorn app.main:app --reload --port 8003
 ```
@@ -42,8 +44,9 @@ API sur le port **8003**.
 | Variable | Défaut | Rôle |
 |----------|--------|------|
 | `UPLOAD_DATA_DIR` | `/data/upload/incoming` | Répertoire de dépôt des fichiers |
-| `UPLOAD_JWT_SECRET` | `dev-upload-jwt-secret` | Secret HS256 partagé avec le service auth |
-| `UPLOAD_JWT_ALGORITHM` | `HS256` | Algorithme JWT |
+| `UPLOAD_JWT_PUBLIC_KEY` | **obligatoire** | Clé publique Ed25519 (PEM), paire du `AUTH_JWT_PRIVATE_KEY` du service auth |
+| `UPLOAD_JWT_ISSUER` | `stream321-auth` | Claim `iss`, identique à auth |
+| `UPLOAD_JWT_AUDIENCE` | `stream321-api` | Claim `aud`, identique à auth |
 | `UPLOAD_CATALOG_URL` | `http://127.0.0.1:8002` | Base URL du microservice catalog (health avant upload) |
 | `UPLOAD_CATALOG_TIMEOUT_SECONDS` | `3.0` | Timeout HTTP vers le catalog. Nombre strictement positif. Une valeur illisible empêche le démarrage. |
 

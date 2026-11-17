@@ -29,7 +29,7 @@ Réponse `200` :
 
 | Prérequis | Valeur |
 |-----------|--------|
-| Header | `Authorization: Bearer <JWT>` (même secret que le service auth : `UPLOAD_JWT_SECRET`) |
+| Header | `Authorization: Bearer <JWT>` (EdDSA émis par auth : `iss`, `aud`, clé publique dans `UPLOAD_JWT_PUBLIC_KEY`) |
 | Corps | `multipart/form-data`, champ fichier `file` |
 | Catalog | Avant tout traitement : `GET {UPLOAD_CATALOG_URL}/health` doit répondre **200** avec `{"status":"ok","service":"catalog"}` |
 

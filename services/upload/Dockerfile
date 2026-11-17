@@ -8,7 +8,7 @@ COPY app /app/app
 
 ENV PYTHONPATH=/app
 ENV UPLOAD_DATA_DIR=/data/upload/incoming
-ENV UPLOAD_JWT_SECRET=dev-upload-jwt-secret
+# UPLOAD_JWT_PUBLIC_KEY est obligatoire au runtime (compose ou orchestration).
 EXPOSE 8003
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=6 \
