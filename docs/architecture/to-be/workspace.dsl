@@ -163,7 +163,6 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
             at brokerPod 1370 610
             size gatewayPod 1560 160
             size brokerPod 1720 140
-            size secret 240 120
         }
 
         styles {
