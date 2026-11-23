@@ -150,7 +150,7 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
             maxCrossings 0
             labelWidth 20
             at config 100 1920
-            at secret 90 2110
+            at secret 90 2120
             at ingress 1510 1970
             at spaPod 790 1960
             at gatewayPod 1260 1630

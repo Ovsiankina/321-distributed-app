@@ -49,7 +49,9 @@ workspace "Stream321 (as-is)" "Architecture actuelle de Stream321. Déploiement 
             mediaFiles = container "Fichiers média" "Vidéos sources (lecture seule) et miniatures générées." "Système de fichiers (bind mount datasets/videos, volume catalog-thumbs)" "Fichiers"
 
             // Présents seulement sur origin/dev.
-            gateway = container "API Gateway" "Proxy inverse mince, sans JWT ; route vers Streaming et Subtitles, absents (branche dev, pas encore sur main)." "Python 3.12, FastAPI, httpx (port 8000)" "DevSeulement"
+            gateway = container "API Gateway" "Proxy inverse mince, sans JWT ; route vers Streaming et Subtitles, absents (branche dev, pas encore sur main)." "Python 3.12, FastAPI, httpx (port 8000)" "DevSeulement" {
+                tags "stream321.gateway"
+            }
             auth = container "Service Auth" "Inscription, connexion, /me, émet les JWT Ed25519 (branche dev, pas encore sur main)." "Python 3.12, FastAPI, SQLAlchemy, Argon2id, PyJWT EdDSA (port 8001)" "DevSeulement"
             authDb = container "Base Auth" "Table users (branche dev, pas encore sur main)." "MariaDB 11" "Database,DevSeulement"
             upload = container "Service Upload" "Squelette : valide le JWT, répond toujours 501, hors passerelle (branche dev, pas encore sur main)." "Python 3.12, FastAPI, httpx, PyJWT (port 8003)" "DevSeulement"
@@ -112,17 +114,18 @@ workspace "Stream321 (as-is)" "Architecture actuelle de Stream321. Déploiement 
             subtitle "Tout le code existant. Pointillés : seulement sur dev. Rouge : violation. Gris pointillé : documenté, non branché."
             include *
             maxCrossings 0
-            at visitor 400 170
-            at member 800 170
-            at creator 1200 170
-            at spa 800 450
-            at gateway 400 760
-            at catalog 1200 760
-            at upload 1700 760
-            at auth 400 1060
-            at authDb 400 1340
-            at catalogDb 1000 1060
-            at mediaFiles 1400 1060
+            at visitor -30 240
+            at member 370 240
+            at creator 770 240
+            at spa 370 520
+            at gateway -20 830
+            at catalog 770 830
+            at upload 1270 830
+            at auth -30 1130
+            at authDb -30 1410
+            at catalogDb 570 1130
+            at mediaFiles 970 1130
+            paperSize A6_Portrait
         }
 
         styles {
@@ -171,6 +174,9 @@ workspace "Stream321 (as-is)" "Architecture actuelle de Stream321. Déploiement 
             relationship "Violation" {
                 color #c62828
                 thickness 3
+            }
+            element "stream321.gateway" {
+                background #bc84bf
             }
         }
     }

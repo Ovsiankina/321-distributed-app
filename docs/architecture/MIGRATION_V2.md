@@ -28,9 +28,9 @@
 
 L'examen demande une architecture microservices, une API Gateway, et un MOM
 (middleware orienté messages) qui fait interagir au moins deux microservices.
-Un principe découle des deux premiers points : un microservice n'appelle pas
-directement un autre microservice. L'état actuel (`main` + `dev`) ne respecte
-aucun de ces points.
+L'équipe y ajoute une règle plus stricte que le cours (voir la section 2) : un
+microservice n'appelle pas directement un autre microservice. L'état actuel
+(`main` + `dev`) ne respecte aucun de ces points.
 
 | Exigence ou principe | Constat dans le code | Où |
 |----------------------|----------------------|----|
@@ -879,6 +879,10 @@ La cible n'est volontairement pas parfaite. Ces points sont connus et assumés :
 - **Confiance dans les en-têtes d'identité** : les services croient
   `X-User-Id` parce que seuls les pods du cluster peuvent les joindre
   (Services ClusterIP). Aucune NetworkPolicy n'est prévue.
+- **Fichier orphelin après `video.removed`** : seul Auth s'abonne à
+  `video.removed`. Le MP4 d'une vidéo retirée du catalogue reste dans le
+  Stockage vidéo. Média pourra s'y abonner plus tard, avec sa propre queue,
+  sans toucher au Catalog (mode Topic).
 - **Pas de conversion vidéo** : un seul fichier MP4 par vidéo ; le paramètre
   `quality` est validé mais ne change rien.
 - **Pas d'observabilité** : ni métriques, ni traces, ni journaux centralisés.
