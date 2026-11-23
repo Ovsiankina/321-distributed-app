@@ -1,11 +1,15 @@
 # Migration vers l'architecture cible (`/api/v2`)
 
-> **Statut : guide de migration.** L'architecture cible est décidée (voir
-> [`to-be/workspace.dsl`](to-be/workspace.dsl)). Ce document explique comment
-> l'atteindre par petites étapes, sans casser l'API actuelle. Il ne remplace pas
-> le contrat : les routes v2 doivent être ajoutées à
-> [`../api/gateway.openapi.yaml`](../api/gateway.openapi.yaml) et à
-> [`../API_GATEWAY.md`](../API_GATEWAY.md) dans la PR qui les implémente.
+> **Statut : guide de migration.** L'architecture cible est décidée et fixée
+> dans [`../ARCHITECTURE.md`](../ARCHITECTURE.md), qui l'emporte sur ce guide en
+> cas d'écart. Ce document explique comment l'atteindre par petites étapes,
+> sans casser l'API actuelle. Les points de détail de la
+> [section 10](#10-décisions-de-détail-à-valider) restent des propositions, à
+> confirmer en équipe avant l'étape concernée. Ce guide ne remplace pas le
+> contrat : les routes v2 sont dans
+> [`../api/gateway.openapi.yaml`](../api/gateway.openapi.yaml) et
+> [`../API_GATEWAY.md`](../API_GATEWAY.md). Une PR qui implémente une route s'y
+> conforme, et y corrige d'abord tout écart.
 >
 > Base de travail : la branche `dev`. Gateway, Auth et Upload n'existent pas
 > encore sur `main`. Le squelette Upload (`services/upload`) devient le

@@ -11,6 +11,9 @@ c4rizer (proche de Structurizr) ; les diagrammes en sont générés.
 | [`as-is/workspace.dsl`](as-is/workspace.dsl) | État actuel, relevé dans le code. Base : `main` (SPA, Catalog, sa base, fichiers média). Les conteneurs qui n'existent que sur `dev` (Gateway, Auth et sa base, Upload) portent le tag `DevSeulement`, ce qui donne une vue avec `dev` et une vue limitée à `main`. Les écarts aux principes (SPA qui contourne la Gateway, Upload qui appelle le Catalog) sont marqués. |
 | [`to-be/workspace.dsl`](to-be/workspace.dsl) | Architecture cible décidée : Gateway en point d'entrée unique avec `/api/v2`, bus de messages RabbitMQ, Service Média (le squelette Upload étendu : réception et lecture des vidéos), un stockage par microservice et aucun stockage partagé entre services, déploiement Kubernetes. Les nouveaux conteneurs et les flux asynchrones sont distingués par des tags. |
 
+La référence contraignante est [`../ARCHITECTURE.md`](../ARCHITECTURE.md) : elle
+fixe les règles et résume la cible. Les workspaces en sont la vue en diagrammes.
+
 Le passage de l'un à l'autre est décrit dans [`MIGRATION_V2.md`](MIGRATION_V2.md),
 qui relie aussi la cible à la théorie du cours (section 2).
 
