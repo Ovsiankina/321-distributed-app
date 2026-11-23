@@ -27,6 +27,34 @@ If you are an AI agent and you want to create a commit, you are **disallowed** t
    Copilot, etc.) in commit messages or PR descriptions. Commits are authored by
    the human running the tool.
 
+## Architecture & API (read before writing code)
+
+Before changing any service, the frontend, or the deployment, read:
+
+1. [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — the binding target
+   architecture: rules R1–R9, components, messaging, data ownership.
+2. [`docs/API_GATEWAY.md`](docs/API_GATEWAY.md) and
+   [`docs/api/gateway.openapi.yaml`](docs/api/gateway.openapi.yaml) — the public
+   API contract, v1 (`/api`, frozen) and v2 (`/api/v2`, the target).
+3. [`docs/architecture/MIGRATION_V2.md`](docs/architecture/MIGRATION_V2.md) —
+   how and in which order to reach the target.
+
+The rules an agent most often breaks:
+
+- **No microservice calls another microservice.** Services exchange
+  information only through the message bus (RabbitMQ), never over HTTP.
+- **One owner per data store.** Never mount or query a database or volume from
+  a second service.
+- **The client only talks to the Gateway**, and new work targets `/api/v2`.
+  Never change a v1 route; never declare `/api/v2` routes inside a service.
+- **Do not create a new microservice, a saga orchestrator, or a shared library
+  between services.**
+- **Do not build ahead of the spec.** Implement a v2 route only at its
+  migration step, and not while it is marked "à confirmer".
+
+If a task cannot be done without breaking one of these, stop and tell the
+user: the architecture document is changed first, in a PR, then the code.
+
 ## Commits, branches & pull requests
 
 - **Commits** follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/),
