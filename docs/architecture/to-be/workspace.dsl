@@ -153,16 +153,20 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
             at secret 90 2120
             at ingress 1510 1970
             at spaPod 790 1960
-            at gatewayPod 1260 1630
+            at gatewayPod 1130 1640
             at authDbPod 370 950
             at authPod 550 1250
             at catalogPod 1140 1260
             at streamingPod 1670 1250
             at catalogDbPod 960 960
-            at mediaVol 1670 890
-            at brokerPod 1370 610
-            size gatewayPod 1560 160
-            size brokerPod 1720 140
+            at mediaVol 1490 960
+            at brokerPod 1190 600
+            anchor gatewayPod -> authPod to bottom
+            anchor gatewayPod -> catalogPod to bottom
+            anchor gatewayPod -> streamingPod to bottom
+            size gatewayPod 1500 160
+            size brokerPod 1400 140
+            line gatewayPod -> streamingPod position 41
         }
 
         styles {
