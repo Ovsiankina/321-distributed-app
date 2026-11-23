@@ -1,8 +1,8 @@
 // Stream321 - architecture CIBLE (to-be), modèle C4 au format c4rizer.
 //
 // Légende des tags :
-//   Nouveau  : conteneur qui n'existe pas encore dans le code (Service Streaming,
-//              Bus de messages) ; bordure orange épaisse, pour voir l'écart avec l'as-is.
+//   Nouveau  : conteneur qui n'existe pas encore dans le code (Bus de messages) ;
+//              bordure orange épaisse, pour voir l'écart avec l'as-is.
 //   Async    : relation asynchrone via le bus (AMQP) ; trait pointillé orange.
 //   Broker   : le MOM (RabbitMQ), forme Pipe (file de messages).
 //   Database : base de données, forme Cylinder. Storage : stockage de fichiers, forme Folder.
@@ -11,14 +11,18 @@
 //   Evenements : conteneurs reliés au bus ; la vue filtrée tobe-c2-mom garde
 //              ces conteneurs et les relations Async (flux MOM seul).
 // Aucune relation ne va d'un microservice à un autre : les services ne parlent
-// qu'à la passerelle (qui les appelle), à leur base, au stockage média et au bus.
+// qu'à la passerelle (qui les appelle), à leur propre stockage et au bus.
+// Chaque stockage a un seul service propriétaire (une base par microservice) :
+// Base Auth -> Auth, Base Catalog -> Catalog, Stockage vidéo -> Média.
+// Mise en ligne = SAGA par chorégraphie : Média publie video.uploaded, Catalog
+// publie video.published (ou video.rejected, et Média supprime le fichier).
 //
 // Vérifier et générer les diagrammes (depuis la racine du dépôt) :
 //   c4rizer validate docs/architecture/to-be/workspace.dsl
 //   c4rizer lint docs/architecture/to-be/workspace.dsl
 //   c4rizer render docs/architecture/to-be/workspace.dsl -o docs/architecture/to-be/diagrams
 
-workspace "Stream321 - architecture cible" "Cible : microservices derrière une passerelle /api/v2, échanges asynchrones par RabbitMQ, déploiement Kubernetes." {
+workspace "Stream321 - architecture cible" "Cible : microservices derrière une passerelle /api/v2, un stockage privé par service, échanges asynchrones par RabbitMQ, déploiement Kubernetes." {
 
     model {
         visitor = person "Visiteur" "Personne anonyme : parcourt, recherche et regarde des vidéos sans compte."
@@ -27,15 +31,14 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
 
         stream321 = softwareSystem "Stream321" "Plateforme de streaming vidéo : catalogue, lecture, favoris et mise en ligne de vidéos." {
             spa = container "Application web" "SPA : accueil, recherche, lecteur, connexion, favoris, upload. N'appelle que /api/v2." "React, TypeScript, servie par nginx" "WebApp"
-            gateway = container "API Gateway" "Point d'entrée unique : garde /api (v1), ajoute /api/v2 (JWT validé, X-User-Id, Range relayé)." "Python 3.12, FastAPI, httpx" "Gateway"
+            gateway = container "API Gateway" "Point d'entrée unique : garde /api (v1), route /api/v2 vers Auth, Catalog et Média (JWT validé, Range relayé)." "Python 3.12, FastAPI, httpx" "Gateway"
             auth = container "Service Auth" "Comptes, émission des JWT (Ed25519), favoris ; garde une copie locale des vidéos connues." "Python 3.12, FastAPI, SQLAlchemy, PyJWT EdDSA, aio-pika" "Service,Evenements"
             authDb = container "Base Auth" "Tables users, favorites et video_refs (copie alimentée par les événements)." "MariaDB 11" "Database"
-            catalog = container "Service Catalog" "Métadonnées, recherche et miniatures des vidéos ; publie les vidéos téléversées." "Python 3.12, FastAPI, SQLAlchemy, ffmpeg, aio-pika" "Service,Evenements"
-            catalogDb = container "Base Catalog" "Tables videos et tags." "MariaDB 11" "Database"
-            upload = container "Service Upload" "Reçoit le fichier, l'écrit sur le stockage, publie video.uploaded, répond 202 Accepted." "Python 3.12, FastAPI, aio-pika" "Service,Evenements"
-            streaming = container "Service Streaming" "Sert les MP4 par plages HTTP (206) ; trouve le fichier par convention {video_id}.mp4." "Python 3.12, FastAPI" "Service,Nouveau"
+            catalog = container "Service Catalog" "Métadonnées, recherche et miniatures (stockées en base) ; valide les vidéos annoncées par le bus." "Python 3.12, FastAPI, SQLAlchemy, aio-pika" "Service,Evenements"
+            catalogDb = container "Base Catalog" "Tables videos (dont miniatures) et tags." "MariaDB 11" "Database"
+            media = container "Service Média" "Reçoit les vidéos (202), crée la miniature, publie video.uploaded ; sert les MP4 par plages (206)." "Python 3.12, FastAPI, ffmpeg, aio-pika" "Service,Evenements"
             broker = container "Bus de messages" "MOM : exchange topic stream321.events, une file durable par service consommateur." "RabbitMQ 3 (AMQP 0-9-1)" "Broker,Nouveau,Evenements"
-            media = container "Stockage média" "Fichiers vidéo et miniatures. Seul Upload écrit les vidéos ; Streaming ne fait que lire." "Volume partagé (PVC ReadWriteMany)" "Storage"
+            videoStore = container "Stockage vidéo" "Fichiers MP4, privés au Service Média (partagés seulement entre ses réplicas)." "Volume privé (PVC)" "Storage"
         }
 
         // Personnes -> SPA
@@ -49,21 +52,16 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
         // Passerelle -> services (requêtes synchrones)
         gateway -> auth "Route /api/v2/auth (comptes, favoris)" "JSON/HTTP"
         gateway -> catalog "Route /api/v2/catalog (lecture publique)" "JSON/HTTP"
-        gateway -> upload "Route /api/v2/upload/videos (JWT requis)" "multipart/HTTP"
-        gateway -> streaming "Route /api/v2/stream/{id} (Range relayé)" "HTTP Range, 206"
+        gateway -> media "Route /api/v2/upload/videos (JWT requis) et /api/v2/stream/{id} (Range relayé)" "HTTP (multipart, Range 206)"
 
-        // Services -> leur base
+        // Services -> leur propre stockage (un seul service propriétaire par stockage)
         auth -> authDb "Lit et écrit comptes, favoris et video_refs" "SQL (PyMySQL)"
-        catalog -> catalogDb "Lit et écrit vidéos et tags" "SQL (PyMySQL)"
+        catalog -> catalogDb "Lit et écrit vidéos, miniatures et tags" "SQL (PyMySQL)"
+        media -> videoStore "Écrit et lit les MP4" "Système de fichiers"
 
-        // Services -> stockage média
-        upload -> media "Écrit les vidéos reçues" "Système de fichiers"
-        catalog -> media "Lit les vidéos, écrit les miniatures" "Système de fichiers"
-        streaming -> media "Lit les vidéos à diffuser" "Système de fichiers"
-
-        // Services -> bus de messages (asynchrone)
-        upload -> broker "Publie video.uploaded" "AMQP" "Async"
-        catalog -> broker "Consomme video.uploaded ; publie video.published et video.removed" "AMQP" "Async"
+        // Services -> bus de messages (asynchrone, publication/abonnement)
+        media -> broker "Publie video.uploaded ; consomme video.rejected" "AMQP" "Async"
+        catalog -> broker "Consomme video.uploaded ; publie video.published, video.removed et video.rejected" "AMQP" "Async"
         auth -> broker "Consomme video.published et video.removed" "AMQP" "Async"
 
         prod = deploymentEnvironment "Production" {
@@ -88,13 +86,9 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
                         instances 2
                         catalogPod = containerInstance catalog
                     }
-                    uploadDep = deploymentNode "upload" "Pod sans état, sondes readiness et liveness sur /health." "Deployment" {
-                        instances 1
-                        uploadPod = containerInstance upload
-                    }
-                    streamingDep = deploymentNode "streaming" "Pods sans état, sondes readiness et liveness sur /health." "Deployment" {
+                    mediaDep = deploymentNode "media" "Deux réplicas qui partagent le PVC media-videos, sondes readiness et liveness sur /health." "Deployment" {
                         instances 2
-                        streamingPod = containerInstance streaming
+                        streamingPod = containerInstance media
                     }
                     authDbSts = deploymentNode "auth-db" "StatefulSet avec son PersistentVolumeClaim." "StatefulSet + PVC" {
                         instances 1
@@ -108,8 +102,8 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
                         instances 1
                         brokerPod = containerInstance broker
                     }
-                    mediaPvc = deploymentNode "media" "Volume partagé monté par upload, catalog et streaming." "PVC ReadWriteMany" {
-                        mediaVol = containerInstance media
+                    mediaPvc = deploymentNode "media-videos" "Volume privé du Service Média, monté uniquement par le Deployment media." "PVC ReadWriteMany" {
+                        mediaVol = containerInstance videoStore
                     }
                 }
             }
@@ -139,10 +133,9 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
             at authDb 120 1160
             at auth 560 1160
             at catalog 920 1160
-            at streaming 1280 1160
-            at upload 1640 1160
+            at media 1280 1160
             at catalogDb 740 1480
-            at media 1280 1480
+            at videoStore 1280 1480
             at broker 920 1800
             size gateway 280 160
             size broker 1680 140
@@ -156,21 +149,21 @@ workspace "Stream321 - architecture cible" "Cible : microservices derrière une 
             include *
             maxCrossings 0
             labelWidth 20
-            at config 120 170
-            at secret 120 480
-            at ingress 1370 170
-            at spaPod 930 480
-            at gatewayPod 1370 800
-            at authDbPod 120 1200
-            at authPod 560 1200
-            at catalogPod 1300 1200
-            at streamingPod 1740 1200
-            at uploadPod 2180 1200
-            at catalogDbPod 920 1660
-            at mediaVol 1740 1660
-            at brokerPod 1370 2060
-            size gatewayPod 280 160
-            size brokerPod 1660 140
+            at config 100 1920
+            at secret 90 2110
+            at ingress 1510 1970
+            at spaPod 790 1960
+            at gatewayPod 1260 1630
+            at authDbPod 370 950
+            at authPod 550 1250
+            at catalogPod 1140 1260
+            at streamingPod 1670 1250
+            at catalogDbPod 960 960
+            at mediaVol 1670 890
+            at brokerPod 1370 610
+            size gatewayPod 1560 160
+            size brokerPod 1720 140
+            size secret 240 120
         }
 
         styles {

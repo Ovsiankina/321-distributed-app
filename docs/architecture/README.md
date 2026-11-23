@@ -9,9 +9,10 @@ c4rizer (proche de Structurizr) ; les diagrammes en sont générés.
 | Workspace | Contenu |
 |-----------|---------|
 | [`as-is/workspace.dsl`](as-is/workspace.dsl) | État actuel, relevé dans le code. Base : `main` (SPA, Catalog, sa base, fichiers média). Les conteneurs qui n'existent que sur `dev` (Gateway, Auth et sa base, Upload) portent le tag `DevSeulement`, ce qui donne une vue avec `dev` et une vue limitée à `main`. Les écarts aux principes (SPA qui contourne la Gateway, Upload qui appelle le Catalog) sont marqués. |
-| [`to-be/workspace.dsl`](to-be/workspace.dsl) | Architecture cible décidée : Gateway en point d'entrée unique avec `/api/v2`, bus de messages RabbitMQ, nouveau service Streaming, stockage média partagé, déploiement Kubernetes. Les nouveaux conteneurs et les flux asynchrones sont distingués par des tags. |
+| [`to-be/workspace.dsl`](to-be/workspace.dsl) | Architecture cible décidée : Gateway en point d'entrée unique avec `/api/v2`, bus de messages RabbitMQ, Service Média (le squelette Upload étendu : réception et lecture des vidéos), un stockage par microservice et aucun stockage partagé entre services, déploiement Kubernetes. Les nouveaux conteneurs et les flux asynchrones sont distingués par des tags. |
 
-Le passage de l'un à l'autre est décrit dans [`MIGRATION_V2.md`](MIGRATION_V2.md).
+Le passage de l'un à l'autre est décrit dans [`MIGRATION_V2.md`](MIGRATION_V2.md),
+qui relie aussi la cible à la théorie du cours (section 2).
 
 ## Niveaux C4 couverts
 
@@ -19,7 +20,7 @@ Le passage de l'un à l'autre est décrit dans [`MIGRATION_V2.md`](MIGRATION_V2.
 |--------|---------|------|
 | C1, contexte système | oui | `asis-c1`, `tobe-c1` |
 | C2, conteneurs | oui | `asis-c2-dev`, `asis-c2-main`, `tobe-c2`, `tobe-c2-mom` (flux asynchrone seul) |
-| Déploiement (diagramme complémentaire) | cible seulement | `tobe-k8s` : cluster Kubernetes, namespace `stream321` |
+| Déploiement (diagramme complémentaire) | cible seulement | `tobe-k8s` : cluster Kubernetes, namespace `stream321`, PVC `media-videos` monté par le seul Deployment `media` |
 | C3, composants | non, par choix | |
 | C4, code | non, par choix | |
 
