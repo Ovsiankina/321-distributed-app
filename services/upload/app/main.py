@@ -1,16 +1,23 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import data_dir
+from .config import amqp_url, data_dir
+from .messaging import consume_rejected
 from .routers import stream, upload
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     data_dir().mkdir(parents=True, exist_ok=True)
-    yield
+    consumer = asyncio.create_task(consume_rejected()) if amqp_url() else None
+    try:
+        yield
+    finally:
+        if consumer is not None:
+            consumer.cancel()
 
 
 app = FastAPI(title="Stream321 Media", version="0.1.0", lifespan=lifespan)

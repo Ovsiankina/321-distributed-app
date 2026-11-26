@@ -27,6 +27,7 @@ def test_stream_range_returns_206(client):
 
 def test_rejected_event_deletes_the_file(client):
     from app.config import data_dir
+    from app.messaging import handle_rejected_payload
     from app.routers.upload import apply_rejection
 
     folder = data_dir()
@@ -35,4 +36,11 @@ def test_rejected_event_deletes_the_file(client):
     target.write_bytes(b"mp4")
     apply_rejection("intro")
     assert not target.exists()
-    apply_rejection("intro")
+    target.write_bytes(b"mp4")
+    handle_rejected_payload({"data": {"video_id": "intro", "reason": "invalid_metadata"}})
+    assert not target.exists()
+    handle_rejected_payload({"data": {"video_id": "intro", "reason": "invalid_metadata"}})
+    other = folder / "other.mp4"
+    other.write_bytes(b"stay")
+    handle_rejected_payload({"data": {"video_id": "../other"}})
+    assert other.exists()

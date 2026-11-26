@@ -1,6 +1,6 @@
 # Service Média (`services/upload`)
 
-Même processus pour l'envoi et la lecture (port 8003). Le dossier garde le nom `upload` (voir `docs/ARCHITECTURE.md`). La Gateway vérifie le JWT et envoie `X-User-Id` et `X-Channel-Id`. Ce service ne parle pas au catalog : il publie `video.uploaded` sur `UPLOAD_AMQP_URL`.
+Même processus pour l'envoi et la lecture (port 8003). Le dossier garde le nom `upload` (voir `docs/ARCHITECTURE.md`). La Gateway vérifie le JWT et envoie `X-User-Id` et `X-Channel-Id`. Ce service ne parle pas au catalog : il publie `video.uploaded` sur `UPLOAD_AMQP_URL`, et il supprime le fichier quand il reçoit `video.rejected`.
 
 ## Prérequis
 
@@ -38,21 +38,24 @@ API sur le port **8003**.
 
 | Variable | Défaut | Rôle |
 |----------|--------|------|
-| `UPLOAD_DATA_DIR` | `/data/upload/incoming` | Répertoire de dépôt des fichiers |
-| `UPLOAD_JWT_PUBLIC_KEY` | **obligatoire** | Clé publique Ed25519 (PEM), paire du `AUTH_JWT_PRIVATE_KEY` du service auth |
-| `UPLOAD_JWT_ISSUER` | `stream321-auth` | Claim `iss`, identique à auth |
-| `UPLOAD_JWT_AUDIENCE` | `stream321-api` | Claim `aud`, identique à auth |
-| `UPLOAD_CATALOG_URL` | `http://127.0.0.1:8002` | Base URL du microservice catalog (health avant upload) |
-| `UPLOAD_CATALOG_TIMEOUT_SECONDS` | `3.0` | Timeout HTTP vers le catalog. Nombre strictement positif. Une valeur illisible empêche le démarrage. |
+| `UPLOAD_DATA_DIR` | `/data/videos` | Fichiers `{video_id}.mp4` |
+| `UPLOAD_AMQP_URL` | vide | Bus RabbitMQ. Vide : l'upload répond 503, le consumer `video.rejected` ne démarre pas. |
+| `UPLOAD_MAX_BYTES` | 512 Mio | Taille maximale d'un envoi |
+
+Miniatures du jeu de démonstration, une fois les MP4 copiés dans le volume :
+
+```bash
+python -m app.announce
+```
+
+La commande publie `video.uploaded` avec `origin=dataset`. Le catalog n'en retient que la miniature, pour les vidéos déjà présentes dans son fixture.
 
 ## Intégration multi-services
 
-Catalog down → **503**, pas de buffer ; le client réessaie lorsque le catalog répond de nouveau sur `/health`.
+L'envoi ne dépend pas du catalog. Si le broker est arrêté, l'upload répond 503 et ne garde pas le fichier.
 
 ```bash
-export INTEGRATION_CATALOG_URL=http://127.0.0.1:8002
 export INTEGRATION_UPLOAD_URL=http://127.0.0.1:8003
-export INTEGRATION_AUTH_URL=http://127.0.0.1:8001   # quand auth tourne
+export INTEGRATION_AUTH_URL=http://127.0.0.1:8001
 pytest ../../tests/integration/test_upload_auth.py -m integration -v
-pytest ../../tests/integration/test_upload_catalog.py -m integration -v
 ```
