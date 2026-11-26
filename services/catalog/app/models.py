@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text, UniqueConstraint, func
+from sqlalchemy.dialects.mysql import MEDIUMBLOB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -23,7 +24,10 @@ class Video(Base):
     stream_modes: Mapped[str] = mapped_column(Text)
     subtitle_formats: Mapped[str] = mapped_column(Text)
     source: Mapped[str] = mapped_column(String(16), default="fixture")
-    thumbnail_jpeg: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    thumbnail_jpeg: Mapped[bytes | None] = mapped_column(
+        LargeBinary().with_variant(MEDIUMBLOB(), "mysql", "mariadb"),
+        nullable=True,
+    )
     tag_rows: Mapped[list["Tag"]] = relationship(
         back_populates="video", cascade="all, delete-orphan"
     )

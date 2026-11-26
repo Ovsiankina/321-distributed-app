@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from .config import CATALOG_DATA_DIR, CATALOG_DATABASE_URL
+from .config import CATALOG_DATA_DIR, resolved_database_url
 from .models import Base
 
 CATALOG_DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -13,7 +13,11 @@ def _engine_kwargs(url: str) -> dict:
     return {"pool_pre_ping": True}
 
 
-engine = create_engine(CATALOG_DATABASE_URL, **_engine_kwargs(CATALOG_DATABASE_URL))
+def _database_url() -> str:
+    return resolved_database_url().render_as_string(hide_password=False)
+
+
+engine = create_engine(_database_url(), **_engine_kwargs(_database_url()))
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 

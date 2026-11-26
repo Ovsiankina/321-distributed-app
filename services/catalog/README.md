@@ -87,7 +87,9 @@ La recherche `internet` doit renvoyer au moins `UXielWVovBo` (match dans la desc
 
 | Variable | Défaut | Rôle |
 |----------|--------|------|
-| `CATALOG_DATABASE_URL` | `mariadb+pymysql://catalog:catalog@localhost:3306/catalog` (défaut code ; **uvicorn local** : `@127.0.0.1:3310` après compose integration) | Métadonnées catalogue (MariaDB) |
+| `CATALOG_DATABASE_URL` | `mariadb+pymysql://catalog:catalog@localhost:3306/catalog` (défaut code ; **uvicorn local** : `@127.0.0.1:3310` après compose integration) | Métadonnées catalogue (MariaDB). En Docker le mot de passe n'est pas dans l'URL. |
+| `CATALOG_DB_PASSWORD` | vide | Mot de passe MariaDB, ajouté à l'URL au démarrage. |
+| `CATALOG_AMQP_URL` | vide | Bus RabbitMQ. Vide : le catalog démarre sans publier ni consommer. |
 | `CATALOG_DATA_DIR` | `/data/catalog` | Volume `thumbs/` (fichiers) |
 | `CATALOG_FIXTURES_DIR` | `fixtures/` (dans l'image) | `catalog.json`, `featured.json` |
 | `CATALOG_VIDEOS_DIR` | `/data/videos` | `{video_id}.mp4` pour qualités et vignettes |

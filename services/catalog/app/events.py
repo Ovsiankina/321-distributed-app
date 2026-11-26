@@ -2,11 +2,14 @@
 
 import base64
 import json
+import logging
 from collections.abc import Callable
 
 from sqlalchemy.orm import Session
 
 from .models import ProcessedEvent, Tag, Video
+
+logger = logging.getLogger(__name__)
 
 MAX_THUMBNAIL_BYTES = 256 * 1024
 Publisher = Callable[[str, dict], None]
@@ -36,8 +39,10 @@ def ingest_uploaded(db: Session, message: dict, publish: Publisher) -> str:
     if origin == "dataset":
         video = db.get(Video, video_id)
         thumb = _decode_thumbnail(data.get("thumbnail_jpeg_base64"))
-        if video is not None and thumb is not None:
+        if video is not None and video.source != "upload" and thumb is not None:
             video.thumbnail_jpeg = thumb
+        elif video is None:
+            logger.info("video.uploaded dataset ignoré, vidéo inconnue: %s", video_id)
         db.add(ProcessedEvent(event_id=event_id))
         db.commit()
         return "dataset"
@@ -92,6 +97,28 @@ def ingest_uploaded(db: Session, message: dict, publish: Publisher) -> str:
         },
     )
     return "published"
+
+
+def startup_messages(videos: list[Video], removed: list[dict]) -> list[tuple[str, dict]]:
+    messages = [
+        (
+            "video.published",
+            {"video_id": video.id, "channel_id": video.channel_id, "title": video.title},
+        )
+        for video in videos
+    ]
+    messages.extend(
+        (
+            "video.removed",
+            {
+                "video_id": item["video_id"],
+                "channel_id": item["channel_id"],
+                "title": item["title"],
+            },
+        )
+        for item in removed
+    )
+    return messages
 
 
 def _decode_thumbnail(raw) -> bytes | None:

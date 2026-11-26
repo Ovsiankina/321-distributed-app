@@ -6,6 +6,68 @@ import sys
 from pathlib import Path
 
 
+def test_sync_keeps_uploaded_rows_and_reports_removed_fixtures(client, tmp_path):
+    import json
+
+    from app.db import SessionLocal
+    from app.models import Tag, Video
+    from app.seed import sync_catalog_db
+
+    db = SessionLocal()
+    try:
+        db.add(
+            Video(
+                id="uploaded-one",
+                channel_id="UCX",
+                title="Mine",
+                description="",
+                thumbnail_path="",
+                duration_seconds=3,
+                featured=False,
+                qualities='["720p"]',
+                subtitle_langs="[]",
+                stream_modes='["mp4"]',
+                subtitle_formats="[]",
+                source="upload",
+            )
+        )
+        db.flush()
+        db.add(Tag(tag="demo", video_id="uploaded-one"))
+        db.commit()
+
+        catalog = tmp_path / "only-one.json"
+        catalog.write_text(
+            json.dumps(
+                {
+                    "videos": [
+                        {
+                            "id": "test-video-one",
+                            "channel_id": "UC_test_channel_one",
+                            "title": "Internet et réseaux",
+                            "description": "Explication du fonctionnement d'Internet.",
+                            "tags": ["internet"],
+                            "duration_string": "26:02",
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        featured = tmp_path / "featured.json"
+        featured.write_text('{"video_ids": []}', encoding="utf-8")
+        result = sync_catalog_db(db, catalog, featured)
+        db.expire_all()
+
+        kept = db.get(Video, "uploaded-one")
+        assert kept is not None
+        assert kept.title == "Mine"
+        assert [row.tag for row in kept.tag_rows] == ["demo"]
+        assert db.get(Video, "test-video-two") is None
+        assert {item["video_id"] for item in result.removed} == {"test-video-two"}
+    finally:
+        db.close()
+
+
 def test_startup_sync_refreshes_existing_rows(client):
     from app.db import SessionLocal
     from app.models import Video

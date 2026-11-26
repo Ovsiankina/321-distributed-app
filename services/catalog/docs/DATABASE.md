@@ -3,7 +3,7 @@
 ## Moteur et déploiement
 
 - **Production / Docker** : **MariaDB 11** dans le conteneur `catalog-db` ([`docker-compose.yml`](../docker-compose.yml)), volume `catalog-mariadb-data`.
-- **Connexion** : `CATALOG_DATABASE_URL` (ex. `mariadb+pymysql://catalog:catalog@catalog-db:3306/catalog`).
+- **Connexion** : `CATALOG_DATABASE_URL`. En Docker le mot de passe est `CATALOG_DB_PASSWORD`, pas dans l'URL.
 - **Fichiers hors SGBD** : vignettes JPEG sur le volume `{CATALOG_DATA_DIR}` (voir section Vignettes).
 
 Le microservice possède sa propre base (bloc « DB vidéo / catalogue » du schéma d'architecture), distincte des services login, favoris ou streaming.

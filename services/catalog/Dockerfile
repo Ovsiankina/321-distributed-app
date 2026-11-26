@@ -16,7 +16,8 @@ ENV CATALOG_DATA_DIR=/data/catalog
 ENV CATALOG_FIXTURES_DIR=/app/fixtures
 ENV CATALOG_VIDEOS_DIR=/data/videos
 ENV CATALOG_SUBTITLES_DIR=/data/subtitles
-ENV CATALOG_DATABASE_URL=mariadb+pymysql://catalog:catalog@catalog-db:3306/catalog
+ENV CATALOG_DATABASE_URL=mariadb+pymysql://catalog@catalog-db:3306/catalog
+ENV CATALOG_DB_PASSWORD=catalog
 EXPOSE 8002
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=6 \

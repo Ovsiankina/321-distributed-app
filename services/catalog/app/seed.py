@@ -21,8 +21,14 @@ from .media import ensure_thumbnail, thumbnail_relative_path
 from .models import Tag, Video
 
 
-def _replace_tags(db: Session, pairs: list[tuple[str, str]]) -> None:
-    db.query(Tag).delete()
+class CatalogSync:
+    def __init__(self, removed: list[dict]):
+        self.removed = removed
+
+
+def _replace_tags(db: Session, pairs: list[tuple[str, str]], video_ids: set[str]) -> None:
+    if video_ids:
+        db.query(Tag).filter(Tag.video_id.in_(video_ids)).delete(synchronize_session=False)
     seen: set[tuple[str, str]] = set()
     for label, video_id in pairs:
         key = (label, video_id)
@@ -52,16 +58,21 @@ def sync_catalog_db(
     db: Session,
     catalog_path: Path | None = None,
     featured_path: Path | None = None,
-) -> None:
+) -> CatalogSync:
     catalog_path = catalog_path or default_catalog_path()
     featured_path = featured_path or default_featured_path()
     entries = load_catalog_file(catalog_path)
     featured_ids = load_featured_ids(featured_path)
     valid = {entry.id for entry in entries}
+    removed: list[dict] = []
 
     for row in list(db.query(Video).all()):
-        if row.id not in valid:
-            db.delete(row)
+        if row.id in valid or row.source == "upload":
+            continue
+        removed.append(
+            {"video_id": row.id, "channel_id": row.channel_id, "title": row.title}
+        )
+        db.delete(row)
 
     for entry in entries:
         fields = _video_fields(entry, featured_ids)
@@ -76,11 +87,13 @@ def sync_catalog_db(
     _replace_tags(
         db,
         [(tag, entry.id) for entry in entries for tag in entry.tags],
+        valid,
     )
     db.commit()
 
     for entry in entries:
         ensure_thumbnail(entry.id)
+    return CatalogSync(removed)
 
 
 @contextmanager
@@ -100,6 +113,6 @@ def catalog_sync_lock(blocking: bool = True):
         handle.close()
 
 
-def sync_catalog_on_startup(db: Session) -> None:
+def sync_catalog_on_startup(db: Session) -> CatalogSync:
     with catalog_sync_lock():
-        sync_catalog_db(db)
+        return sync_catalog_db(db)

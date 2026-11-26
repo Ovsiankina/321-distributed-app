@@ -10,6 +10,7 @@
 - Auth : favoris et copie `video_refs` alimentée par `video.published` / `video.removed`. Le JWT d'un créateur porte `channel_id`.
 - SPA : appels sous `/api/v2`, proxy Vite vers la Gateway (port 8000).
 - RabbitMQ local : `services/rabbitmq` (AMQP 5672 et console 15672 sur localhost, utilisateur `stream`). Auth, Catalog et Média déclarent l'exchange `stream321.events` quand leur `*_AMQP_URL` est défini.
+- Catalog : une vidéo `source=upload` survit au redémarrage. Après la synchro, le catalog publie `video.published` pour chaque vidéo restante et `video.removed` pour chaque fixture retirée. Le mot de passe MariaDB passe par `CATALOG_DB_PASSWORD`.
 
 - Microservice Auth (Python 3.12, port 8001) : `POST /api/auth/register`, `POST /api/auth/login` et `GET /api/auth/me` (E1-03). JWT signés en EdDSA et valables 1 h, mots de passe hachés en Argon2id, base MariaDB `auth-db`, 8 comptes créateurs seedés avec leur `channel_id`.
 - Contrat Gateway 0.3.0 : `POST /api/auth/login` répond aussi 400 (corps invalide) et 429 (10 échecs en 60 s pour un même email, header `Retry-After`). Les exemples de `expires_in_hours` passent à 1.

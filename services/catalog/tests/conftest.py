@@ -30,6 +30,7 @@ def _build_client(tmp_path: Path, fixtures_dir: Path) -> TestClient:
     os.environ["CATALOG_VIDEOS_DIR"] = str(tmp_path / "videos")
     os.environ["CATALOG_SUBTITLES_DIR"] = str(tmp_path / "subtitles")
     os.environ["CATALOG_DATABASE_URL"] = f"sqlite:///{data_dir / 'test.db'}"
+    os.environ.pop("CATALOG_DB_PASSWORD", None)
 
     _purge_app_modules()
     main = importlib.import_module("app.main")

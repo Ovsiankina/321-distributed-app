@@ -78,6 +78,50 @@ def test_upload_is_idempotent_and_visible(client):
     assert "newvideo01" in ids
 
 
+def test_dataset_thumbnail_updates_only_a_fixture_row(client):
+    SessionLocal, ingest_uploaded = _ingest()
+    published = []
+    db = SessionLocal()
+    try:
+        status = ingest_uploaded(
+            db,
+            {
+                "event_id": "evt-dataset",
+                "type": "video.uploaded",
+                "data": {
+                    "origin": "dataset",
+                    "video_id": "test-video-one",
+                    "thumbnail_jpeg_base64": JPEG,
+                },
+            },
+            lambda kind, data: published.append((kind, data)),
+        )
+        from app.models import Video
+
+        row = db.get(Video, "test-video-one")
+        assert status == "dataset"
+        assert published == []
+        assert row.thumbnail_jpeg == base64.b64decode(JPEG)
+        assert row.title == "Internet et réseaux"
+    finally:
+        db.close()
+
+
+def test_startup_messages_cover_remaining_and_removed_videos():
+    from app.events import startup_messages
+    from app.models import Video
+
+    video = Video(id="kept", channel_id="UC1", title="Reste")
+    messages = startup_messages(
+        [video],
+        [{"video_id": "gone", "channel_id": "UC2", "title": "Partie"}],
+    )
+    assert messages == [
+        ("video.published", {"video_id": "kept", "channel_id": "UC1", "title": "Reste"}),
+        ("video.removed", {"video_id": "gone", "channel_id": "UC2", "title": "Partie"}),
+    ]
+
+
 def test_thumbnail_url_uses_forwarded_prefix(client):
     response = client.get(
         "/api/catalog/videos/test-video-one",
