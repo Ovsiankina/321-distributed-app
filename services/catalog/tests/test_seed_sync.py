@@ -108,6 +108,15 @@ def test_database_lock_uses_get_lock_and_releases_it():
             return 1
 
     class Connection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def close(self):
+            statements.append("close")
+
         def execute(self, statement, params=None):
             statements.append(str(statement))
             if params is not None:
@@ -118,18 +127,18 @@ def test_database_lock_uses_get_lock_and_releases_it():
         class dialect:
             name = "mysql"
 
+        def connect(self):
+            return Connection()
+
     class FakeSession:
         def get_bind(self):
             return Bind()
-
-        def connection(self):
-            return Connection()
 
     with catalog_sync_lock(FakeSession()):
         pass
     assert "GET_LOCK" in statements[0]
     assert "30" in statements
-    assert "RELEASE_LOCK" in statements[-1]
+    assert any("RELEASE_LOCK" in statement for statement in statements)
 
 
 def test_database_lock_refuses_when_already_held():
@@ -140,6 +149,15 @@ def test_database_lock_refuses_when_already_held():
             return 0
 
     class Connection:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def close(self):
+            return None
+
         def execute(self, statement, params=None):
             return Result()
 
@@ -147,12 +165,12 @@ def test_database_lock_refuses_when_already_held():
         class dialect:
             name = "mariadb"
 
+        def connect(self):
+            return Connection()
+
     class FakeSession:
         def get_bind(self):
             return Bind()
-
-        def connection(self):
-            return Connection()
 
     try:
         with catalog_sync_lock(FakeSession(), blocking=False):

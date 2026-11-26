@@ -95,17 +95,23 @@ def catalog_sync_lock(db: Session, blocking: bool = True):
         yield
         return
     timeout = 30 if blocking else 0
-    connection = db.connection()
-    acquired = connection.execute(
-        text("SELECT GET_LOCK('catalog_sync', :timeout)"),
-        {"timeout": timeout},
-    ).scalar()
-    if acquired != 1:
-        raise BlockingIOError("catalog_sync")
+    # Session.commit() rend la connexion de la session au pool. GET_LOCK est
+    # lié à cette session MariaDB : RELEASE_LOCK doit passer par une connexion
+    # qui reste ouverte pendant tout le bloc, sinon le verrou reste pris.
+    connection = bind.connect()
     try:
-        yield
+        acquired = connection.execute(
+            text("SELECT GET_LOCK('catalog_sync', :timeout)"),
+            {"timeout": timeout},
+        ).scalar()
+        if acquired != 1:
+            raise BlockingIOError("catalog_sync")
+        try:
+            yield
+        finally:
+            connection.execute(text("SELECT RELEASE_LOCK('catalog_sync')"))
     finally:
-        connection.execute(text("SELECT RELEASE_LOCK('catalog_sync')"))
+        connection.close()
 
 
 def sync_catalog_on_startup(db: Session) -> CatalogSync:
