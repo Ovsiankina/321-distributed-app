@@ -13,7 +13,7 @@ docker compose up -d
 
 URL depuis l'hôte : `amqp://stream:stream@127.0.0.1:5672/`.
 
-Depuis un autre compose : `amqp://stream:stream@host.docker.internal:5672/`.
+Depuis un autre compose, sur le réseau Docker `stream321` : `amqp://stream:stream@rabbitmq:5672/`.
 
 | Service | Variable |
 |---------|----------|

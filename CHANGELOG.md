@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- Auth, Catalog et Média rejoignent RabbitMQ par le réseau Docker `stream321` (`amqp://rabbitmq:5672`). Le port publié seulement sur `127.0.0.1` était injoignable depuis les conteneurs, et l'upload finissait en 502.
 - Le verrou `catalog_sync` MariaDB est pris sur une connexion dédiée. `Session.commit()` ne la rend plus au pool avant `RELEASE_LOCK`, ce qui bloquait le test d'intégration suivant.
 - Le catalog borne `ffmpeg` à 30 s lors de la génération des vignettes, pour qu'un MP4 bloquant ne fige plus le démarrage.
 - `GET /health` interroge MariaDB et répond 503 quand la base est injoignable.

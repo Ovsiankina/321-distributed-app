@@ -23,10 +23,18 @@ services:
     environment:
       CATALOG_DATABASE_URL: mariadb+pymysql://catalog@catalog-db:3306/catalog
       CATALOG_DB_PASSWORD: catalog
-      CATALOG_AMQP_URL: amqp://stream:stream@host.docker.internal:5672/
+      CATALOG_AMQP_URL: amqp://stream:stream@rabbitmq:5672/
     depends_on:
       catalog-db:
         condition: service_healthy
+    networks:
+      - default
+      - stream321
 
 volumes:
   catalog-mariadb-data:
+
+networks:
+  stream321:
+    external: true
+    name: stream321

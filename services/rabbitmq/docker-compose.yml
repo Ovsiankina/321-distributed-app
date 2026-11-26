@@ -12,3 +12,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+    networks:
+      - stream321
+
+networks:
+  stream321:
+    name: stream321
