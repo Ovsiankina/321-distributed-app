@@ -14,7 +14,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 export UPLOAD_DATA_DIR=/tmp/media-videos
-export UPLOAD_AMQP_URL=amqp://guest:guest@127.0.0.1:5672/
+export UPLOAD_AMQP_URL=amqp://stream:stream@127.0.0.1:5672/
 uvicorn app.main:app --reload --port 8003
 ```
 

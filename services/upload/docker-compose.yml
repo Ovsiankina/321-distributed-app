@@ -7,7 +7,7 @@ services:
       - "8003:8003"
     environment:
       UPLOAD_DATA_DIR: /data/videos
-      UPLOAD_AMQP_URL: amqp://guest:guest@host.docker.internal:5672/
+      UPLOAD_AMQP_URL: amqp://stream:stream@host.docker.internal:5672/
     volumes:
       - media-videos:/data/videos
 
