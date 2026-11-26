@@ -1,36 +1,30 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import config
-from .routers import upload
-
-
-def prepare_runtime() -> None:
-    config.catalog_timeout_seconds()
-    config.load_jwt_settings()
-    config.data_dir().mkdir(parents=True, exist_ok=True)
+from .config import data_dir
+from .routers import stream, upload
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    prepare_runtime()
+    data_dir().mkdir(parents=True, exist_ok=True)
     yield
 
 
-app = FastAPI(title="321-distributed-app Upload", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Stream321 Media", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 app.include_router(upload.router)
+app.include_router(stream.router)
 
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "upload"}
+    return {"status": "ok", "service": "media"}

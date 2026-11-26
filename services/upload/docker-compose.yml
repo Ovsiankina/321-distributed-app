@@ -6,11 +6,10 @@ services:
     ports:
       - "8003:8003"
     environment:
-      UPLOAD_DATA_DIR: /data/upload/incoming
-      # UPLOAD_JWT_PUBLIC_KEY : PEM Ed25519 (voir README), aligné sur auth
-      UPLOAD_CATALOG_URL: http://host.docker.internal:8002
+      UPLOAD_DATA_DIR: /data/videos
+      UPLOAD_AMQP_URL: amqp://guest:guest@host.docker.internal:5672/
     volumes:
-      - upload-incoming:/data/upload/incoming
+      - media-videos:/data/videos
 
 volumes:
-  upload-incoming:
+  media-videos:

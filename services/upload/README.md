@@ -1,8 +1,6 @@
-# Microservice Upload
+# Service Média (`services/upload`)
 
-Réception et traitement des vidéos uploadées (squelette FastAPI). JWT obligatoire sur `POST /api/upload/videos`.
-
-**Contrat gateway :** section Upload encore en _TODO_ dans [`docs/API_GATEWAY.md`](../../docs/API_GATEWAY.md). Voir [`docs/API.md`](docs/API.md) pour l'API provisoire du service.
+Même processus pour l'envoi et la lecture (port 8003). Le dossier garde le nom `upload` (voir `docs/ARCHITECTURE.md`). La Gateway vérifie le JWT et envoie `X-User-Id` et `X-Channel-Id`. Ce service ne parle pas au catalog : il publie `video.uploaded` sur `UPLOAD_AMQP_URL`.
 
 ## Prérequis
 
@@ -15,11 +13,8 @@ cd services/upload
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-export UPLOAD_DATA_DIR=/tmp/upload-data
-export UPLOAD_JWT_PUBLIC_KEY="$(openssl pkey -in /chemin/auth-private.pem -pubout)"  # clé publique Ed25519 du service auth
-export UPLOAD_JWT_ISSUER=stream321-auth          # défaut auth
-export UPLOAD_JWT_AUDIENCE=stream321-api         # défaut auth
-export UPLOAD_CATALOG_URL=http://127.0.0.1:8002  # catalog doit répondre 200 sur /health
+export UPLOAD_DATA_DIR=/tmp/media-videos
+export UPLOAD_AMQP_URL=amqp://guest:guest@127.0.0.1:5672/
 uvicorn app.main:app --reload --port 8003
 ```
 

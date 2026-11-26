@@ -79,6 +79,37 @@ def streaming_upstream_base() -> str:
     ).rstrip("/")
 
 
+def upload_upstream_base() -> str:
+    return os.environ.get("GATEWAY_UPLOAD_URL", "http://127.0.0.1:8003").rstrip("/")
+
+
+def upload_timeout_seconds() -> float:
+    raw = os.environ.get("GATEWAY_UPLOAD_TIMEOUT_SECONDS", "120.0")
+    try:
+        timeout = float(raw)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"GATEWAY_UPLOAD_TIMEOUT_SECONDS doit être un nombre (reçu {raw!r})"
+        ) from exc
+    if timeout <= 0:
+        raise ValueError(
+            f"GATEWAY_UPLOAD_TIMEOUT_SECONDS doit être positif (reçu {raw!r})"
+        )
+    return timeout
+
+
+def jwt_public_key_pem() -> str:
+    return os.environ.get("GATEWAY_JWT_PUBLIC_KEY", "")
+
+
+def jwt_issuer() -> str:
+    return os.environ.get("GATEWAY_JWT_ISSUER", "stream321-auth")
+
+
+def jwt_audience() -> str:
+    return os.environ.get("GATEWAY_JWT_AUDIENCE", "stream321-api")
+
+
 def streaming_timeout_seconds() -> float:
     raw = os.environ.get("GATEWAY_STREAMING_TIMEOUT_SECONDS", "30.0")
     try:

@@ -18,6 +18,28 @@ def _exact_string(length: int) -> String:
     )
 
 
+class ProcessedEvent(Base):
+    __tablename__ = "processed_events"
+
+    event_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    processed_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class VideoRef(Base):
+    __tablename__ = "video_refs"
+
+    video_id: Mapped[str] = mapped_column(_exact_string(64), primary_key=True)
+    channel_id: Mapped[str] = mapped_column(_exact_string(64))
+    title: Mapped[str] = mapped_column(String(512))
+
+
+class Favorite(Base):
+    __tablename__ = "favorites"
+
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    video_id: Mapped[str] = mapped_column(_exact_string(64), primary_key=True)
+
+
 class User(Base):
     __tablename__ = "users"
 
