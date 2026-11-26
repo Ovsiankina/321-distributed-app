@@ -2,13 +2,12 @@
 
 Métadonnées vidéos, recherche et vignettes pour 321-distributed-app. Les routes publiques suivent le contrat gateway (`/api/catalog/*`).
 
-Le catalogue est persisté dans **MariaDB 11** (conteneur `catalog-db`). Les vignettes JPEG restent sur disque (`{CATALOG_DATA_DIR}/thumbs/`).
+Le catalogue est persisté dans **MariaDB 11** (conteneur `catalog-db`). Les vignettes JPEG sont dans la base (`thumbnail_jpeg`). Le catalog ne lit aucun fichier vidéo.
 
 ## Prérequis
 
 - Python 3.12
 - MariaDB 11 (local ou via Docker)
-- `ffmpeg` (génération des vignettes si des MP4 sont montés)
 
 ## Développement local
 
@@ -27,9 +26,6 @@ Puis l'API (depuis `services/catalog`) :
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-export CATALOG_DATA_DIR=/tmp/catalog-data
-export CATALOG_VIDEOS_DIR=../../datasets/videos
-export CATALOG_SUBTITLES_DIR=../../datasets/subtitles
 export CATALOG_DATABASE_URL=mariadb+pymysql://catalog:catalog@127.0.0.1:3310/catalog
 uvicorn app.main:app --reload --port 8002
 ```
@@ -90,10 +86,7 @@ La recherche `internet` doit renvoyer au moins `UXielWVovBo` (match dans la desc
 | `CATALOG_DATABASE_URL` | `mariadb+pymysql://catalog:catalog@localhost:3306/catalog` (défaut code ; **uvicorn local** : `@127.0.0.1:3310` après compose integration) | Métadonnées catalogue (MariaDB). En Docker le mot de passe n'est pas dans l'URL. |
 | `CATALOG_DB_PASSWORD` | vide | Mot de passe MariaDB, ajouté à l'URL au démarrage. |
 | `CATALOG_AMQP_URL` | vide | Bus RabbitMQ. Vide : le catalog démarre sans publier ni consommer. |
-| `CATALOG_DATA_DIR` | `/data/catalog` | Volume `thumbs/` (fichiers) |
 | `CATALOG_FIXTURES_DIR` | `fixtures/` (dans l'image) | `catalog.json`, `featured.json` |
-| `CATALOG_VIDEOS_DIR` | `/data/videos` | `{video_id}.mp4` pour qualités et vignettes |
-| `CATALOG_SUBTITLES_DIR` | `/data/subtitles` | `{lang}/{video_id}_{lang}.srt` |
 
 ## Documentation
 

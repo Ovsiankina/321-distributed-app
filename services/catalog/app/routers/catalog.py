@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import Response
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..media import resolve_thumbnail_path
 from ..models import Tag, Video
 from ..serialize import to_video_out
 
@@ -63,11 +62,6 @@ def video_detail(video_id: str, request: Request, db: Session = Depends(get_db))
 @router.get("/videos/{video_id}/thumbnail")
 def thumbnail(video_id: str, db: Session = Depends(get_db)):
     video = db.get(Video, video_id)
-    if video is None:
+    if video is None or not video.thumbnail_jpeg:
         raise HTTPException(status_code=404, detail="Vidéo introuvable")
-    if video.thumbnail_jpeg:
-        return Response(content=video.thumbnail_jpeg, media_type="image/jpeg")
-    path = resolve_thumbnail_path(video.thumbnail_path, video_id)
-    if not path.is_file():
-        raise HTTPException(status_code=404, detail="Vidéo introuvable")
-    return FileResponse(path, media_type="image/jpeg")
+    return Response(content=video.thumbnail_jpeg, media_type="image/jpeg")

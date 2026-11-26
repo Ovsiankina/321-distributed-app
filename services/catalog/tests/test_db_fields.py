@@ -1,4 +1,4 @@
-def test_video_has_channel_id_and_thumbnail_path(client):
+def test_video_has_channel_id_and_fixture_source(client):
     from app.db import SessionLocal
     from app.models import Video
 
@@ -7,6 +7,7 @@ def test_video_has_channel_id_and_thumbnail_path(client):
         row = db.get(Video, "test-video-one")
         assert row is not None
         assert row.channel_id == "UC_test_channel_one"
-        assert row.thumbnail_path == "thumbs/test-video-one.jpg"
+        assert row.source == "fixture"
+        assert row.thumbnail_jpeg is None
     finally:
         db.close()

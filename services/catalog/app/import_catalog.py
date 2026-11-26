@@ -2,8 +2,10 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from .config import CATALOG_FIXTURES_DIR, CATALOG_SUBTITLES_DIR, CATALOG_VIDEOS_DIR
+from .config import CATALOG_FIXTURES_DIR
 from .duration import duration_seconds_of
+
+DEFAULT_QUALITIES = ("360p", "720p")
 
 
 @dataclass(frozen=True)
@@ -14,6 +16,8 @@ class CatalogEntry:
     description: str
     tags: tuple[str, ...]
     duration_seconds: int
+    qualities: tuple[str, ...] = DEFAULT_QUALITIES
+    subtitle_langs: tuple[str, ...] = ()
 
 
 def _str_list(value: object) -> list[str]:
@@ -55,6 +59,8 @@ def load_catalog_file(path: Path) -> list[CatalogEntry]:
                 description=str(item.get("description") or ""),
                 tags=tuple(_collect_tags(item)),
                 duration_seconds=seconds,
+                qualities=_listed(item, "qualities", DEFAULT_QUALITIES),
+                subtitle_langs=_listed(item, "subtitle_langs", ()),
             )
         )
     return entries
@@ -76,32 +82,17 @@ def default_featured_path() -> Path:
     return CATALOG_FIXTURES_DIR / "featured.json"
 
 
-def subtitle_langs_for(video_id: str) -> list[str]:
-    langs: list[str] = []
-    if not CATALOG_SUBTITLES_DIR.is_dir():
-        return langs
-    for lang_dir in sorted(CATALOG_SUBTITLES_DIR.iterdir()):
-        if not lang_dir.is_dir():
-            continue
-        candidate = lang_dir / f"{video_id}_{lang_dir.name}.srt"
-        if candidate.is_file():
-            langs.append(lang_dir.name)
-    return langs
-
-
-def qualities_for(video_id: str) -> list[str]:
-    source = CATALOG_VIDEOS_DIR / f"{video_id}.mp4"
-    if source.is_file():
-        return ["360p", "720p"]
-    return ["720p"]
+def _listed(item: dict, key: str, default: tuple[str, ...]) -> tuple[str, ...]:
+    if key not in item or item[key] is None:
+        return default
+    return tuple(_str_list(item[key]))
 
 
 def stream_modes_for(_video_id: str) -> list[str]:
     return ["mp4"]
 
 
-def subtitle_formats_for(video_id: str) -> list[str]:
-    langs = subtitle_langs_for(video_id)
+def subtitle_formats_for(langs: tuple[str, ...]) -> list[str]:
     if langs:
         return ["srt"]
     return []

@@ -1,9 +1,5 @@
 FROM python:3.12-slim-bookworm
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
@@ -12,10 +8,7 @@ COPY app /app/app
 COPY fixtures /app/fixtures
 
 ENV PYTHONPATH=/app
-ENV CATALOG_DATA_DIR=/data/catalog
 ENV CATALOG_FIXTURES_DIR=/app/fixtures
-ENV CATALOG_VIDEOS_DIR=/data/videos
-ENV CATALOG_SUBTITLES_DIR=/data/subtitles
 ENV CATALOG_DATABASE_URL=mariadb+pymysql://catalog@catalog-db:3306/catalog
 ENV CATALOG_DB_PASSWORD=catalog
 EXPOSE 8002

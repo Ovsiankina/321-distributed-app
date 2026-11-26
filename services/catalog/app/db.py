@@ -1,10 +1,8 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from .config import CATALOG_DATA_DIR, resolved_database_url
+from .config import resolved_database_url
 from .models import Base
-
-CATALOG_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def _engine_kwargs(url: str) -> dict:

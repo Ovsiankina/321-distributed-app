@@ -1,11 +1,3 @@
-import os
-import select
-import signal
-import subprocess
-import sys
-from pathlib import Path
-
-
 def test_sync_keeps_uploaded_rows_and_reports_removed_fixtures(client, tmp_path):
     import json
 
@@ -92,48 +84,79 @@ def test_seed_module_has_no_seed_if_empty(client):
     assert not hasattr(seed, "seed_if_empty")
 
 
-def test_startup_sync_lock_is_exclusive_across_processes(client):
+def test_sqlite_sync_lock_does_not_block(client):
+    from app.db import SessionLocal
     from app.seed import catalog_sync_lock
 
-    service_root = str(Path(__file__).resolve().parents[1])
-    holder = subprocess.Popen(
-        [
-            sys.executable,
-            "-c",
-            (
-                "from app.seed import catalog_sync_lock\n"
-                "import time\n"
-                "with catalog_sync_lock():\n"
-                "    print('held', flush=True)\n"
-                "    time.sleep(30)\n"
-            ),
-        ],
-        cwd=service_root,
-        env={**os.environ, "PYTHONPATH": service_root},
-        stdout=subprocess.PIPE,
-        text=True,
-    )
+    db = SessionLocal()
     try:
-        ready, _, _ = select.select([holder.stdout], [], [], 5)
-        assert ready, holder.stderr
-        assert holder.stdout.readline().strip() == "held"
-
-        acquired = False
-
-        def _alarm(_signum, _frame):
-            raise TimeoutError("le verrou a bloqué au lieu de refuser")
-
-        previous = signal.signal(signal.SIGALRM, _alarm)
-        signal.alarm(3)
-        try:
-            with catalog_sync_lock(blocking=False):
-                acquired = True
-        except BlockingIOError:
-            acquired = False
-        finally:
-            signal.alarm(0)
-            signal.signal(signal.SIGALRM, previous)
-        assert acquired is False
+        with catalog_sync_lock(db, blocking=False):
+            with catalog_sync_lock(db, blocking=False):
+                held = True
+        assert held
     finally:
-        holder.kill()
-        holder.wait(timeout=5)
+        db.close()
+
+
+def test_database_lock_uses_get_lock_and_releases_it():
+    from app.seed import catalog_sync_lock
+
+    statements: list[str] = []
+
+    class Result:
+        def scalar(self):
+            return 1
+
+    class Connection:
+        def execute(self, statement, params=None):
+            statements.append(str(statement))
+            if params is not None:
+                statements.append(str(params["timeout"]))
+            return Result()
+
+    class Bind:
+        class dialect:
+            name = "mysql"
+
+    class FakeSession:
+        def get_bind(self):
+            return Bind()
+
+        def connection(self):
+            return Connection()
+
+    with catalog_sync_lock(FakeSession()):
+        pass
+    assert "GET_LOCK" in statements[0]
+    assert "30" in statements
+    assert "RELEASE_LOCK" in statements[-1]
+
+
+def test_database_lock_refuses_when_already_held():
+    from app.seed import catalog_sync_lock
+
+    class Result:
+        def scalar(self):
+            return 0
+
+    class Connection:
+        def execute(self, statement, params=None):
+            return Result()
+
+    class Bind:
+        class dialect:
+            name = "mariadb"
+
+    class FakeSession:
+        def get_bind(self):
+            return Bind()
+
+        def connection(self):
+            return Connection()
+
+    try:
+        with catalog_sync_lock(FakeSession(), blocking=False):
+            refused = False
+    except BlockingIOError:
+        refused = True
+    assert refused
