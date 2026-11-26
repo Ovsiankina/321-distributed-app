@@ -15,4 +15,9 @@ Branches & PRs: reuse existing branches (check `git branch -a`), one branch per
 feature, no stacked branches. Only open a PR towards `main` or a branch owned by
 someone else — merge your own branches locally. No single-commit/draft PRs.
 
+Architecture: read `docs/ARCHITECTURE.md` and `docs/API_GATEWAY.md` before
+writing code. No microservice calls another microservice (message bus only),
+one owner per data store, the client only talks to the Gateway, new work
+targets `/api/v2` and v1 routes never change.
+
 See `AGENTS.md` for the full instructions.

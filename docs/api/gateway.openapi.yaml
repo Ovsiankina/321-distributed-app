@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: API Gateway
-  version: 0.2.0
+  version: 0.4.0
   description: |
     Contrat public de la Gateway.
 
@@ -16,6 +16,12 @@ info:
     Hors de cette version : liste des tags, HLS, fichiers de sous-titres.
     Toute requête client passe par la Gateway. Aucune URL de microservice
     n'est publique.
+
+    v2 : les chemins `/api/v2/*` sont le contrat cible. Il est stable mais
+    pas encore servi par la Gateway. La v1 (`/api/*` hors `/api/v2`) est
+    figée. La Gateway retire `/v2` avant de transmettre : `x-upstream-path`
+    donne le chemin reçu par le microservice. En v2, la Gateway vérifie le
+    JWT et transmet `X-User-Id` et `X-Channel-Id` au microservice.
 
 servers:
   - url: /
@@ -32,6 +38,10 @@ tags:
     description: Livraison MP4 (service Streaming)
   - name: proxy
     description: Forward transparent vers un microservice
+  - name: v2
+    description: Contrat cible `/api/v2`, pas encore servi
+  - name: media
+    description: Envoi et livraison MP4 (Service Média, v2)
 
 paths:
   /health:
@@ -544,6 +554,462 @@ paths:
         "502":
           $ref: "#/components/responses/BadGateway"
 
+  # --- v2 : contrat cible, pas encore servi (voir docs/API_GATEWAY.md) ---
+
+  /api/v2/auth/register:
+    post:
+      tags: [v2, auth]
+      operationId: registerV2
+      summary: Inscription
+      description: Identique à `POST /api/auth/register`.
+      x-proxied-to: auth
+      x-upstream-path: /api/auth/register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: alice@example.com
+              password: secret12
+      responses:
+        "201":
+          description: Compte créé, JWT retourné
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          description: Email ou mot de passe invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Email invalide
+        "409":
+          description: Email déjà utilisé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Cet email est déjà utilisé
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/auth/login:
+    post:
+      tags: [v2, auth]
+      operationId: loginV2
+      summary: Connexion
+      description: |
+        Identique à `POST /api/auth/login`. Le JWT retourné porte le claim
+        `channel_id` quand le compte est un compte créateur.
+      x-proxied-to: auth
+      x-upstream-path: /api/auth/login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: alice@example.com
+              password: secret12
+      responses:
+        "200":
+          description: Authentification réussie
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          description: Corps invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Mot de passe invalide
+        "401":
+          description: Identifiants incorrects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Identifiants incorrects
+        "429":
+          description: Trop d'échecs de connexion pour cet email
+          headers:
+            Retry-After:
+              description: Secondes à attendre avant la prochaine tentative
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Trop de tentatives, réessayez plus tard
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/auth/me:
+    get:
+      tags: [v2, auth]
+      operationId: getMeV2
+      summary: Profil de l'utilisateur courant
+      description: JWT vérifié par la Gateway, qui transmet `X-User-Id`.
+      x-proxied-to: auth
+      x-upstream-path: /api/auth/me
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profil
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              example:
+                id: 1
+                email: alice@example.com
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/auth/favorites:
+    get:
+      tags: [v2, auth]
+      operationId: listFavoritesV2
+      summary: Liste des favoris
+      description: |
+        À confirmer en équipe avant implémentation.
+        `videos` est réduit à ce que le service Auth connaît par les messages
+        `video.published`. Le client charge le reste depuis le catalogue.
+      x-proxied-to: auth
+      x-upstream-path: /api/auth/favorites
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Identifiants et références des vidéos favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoritesResponseV2"
+              example:
+                video_ids: [intro-streaming]
+                videos:
+                  - id: intro-streaming
+                    title: Intro au streaming distribué
+                    channel_id: UC-demo-channel
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/auth/favorites/{video_id}:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+    post:
+      tags: [v2, auth]
+      operationId: addFavoriteV2
+      summary: Ajouter un favori
+      description: |
+        Le service Auth valide la vidéo dans sa propre table, sans appeler le
+        Catalog. Une vidéo tout juste publiée peut répondre 404 pendant un
+        court délai.
+      x-proxied-to: auth
+      x-upstream-path: /api/auth/favorites/{video_id}
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          description: Favori ajouté, ou déjà présent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoriteActionResponse"
+              example:
+                ok: true
+                video_id: intro-streaming
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/ResourceNotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+    delete:
+      tags: [v2, auth]
+      operationId: removeFavoriteV2
+      summary: Retirer un favori
+      x-proxied-to: auth
+      x-upstream-path: /api/auth/favorites/{video_id}
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Favori retiré, ou déjà absent
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/catalog/videos:
+    get:
+      tags: [v2, catalog]
+      operationId: listVideosV2
+      summary: Liste du catalogue
+      description: Identique à la v1. `thumbnail_url` commence par `/api/v2`.
+      x-proxied-to: catalog
+      x-upstream-path: /api/catalog/videos
+      responses:
+        "200":
+          description: Toutes les vidéos, sans pagination
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoListResponse"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/catalog/featured:
+    get:
+      tags: [v2, catalog]
+      operationId: listFeaturedV2
+      summary: Vidéos mises en avant
+      description: Identique à la v1. `thumbnail_url` commence par `/api/v2`.
+      x-proxied-to: catalog
+      x-upstream-path: /api/catalog/featured
+      responses:
+        "200":
+          description: Vidéos dont `featured` est vrai
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoItemsResponse"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/catalog/search:
+    get:
+      tags: [v2, catalog]
+      operationId: searchVideosV2
+      summary: Recherche par mots-clés
+      description: Identique à la v1. `thumbnail_url` commence par `/api/v2`.
+      x-proxied-to: catalog
+      x-upstream-path: /api/catalog/search
+      parameters:
+        - $ref: "#/components/parameters/SearchQuery"
+      responses:
+        "200":
+          description: Résultats. Une requête vide renvoie une liste vide.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/catalog/videos/{video_id}:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+    get:
+      tags: [v2, catalog]
+      operationId: getVideoV2
+      summary: Détail d'une vidéo
+      description: Identique à la v1. `thumbnail_url` commence par `/api/v2`.
+      x-proxied-to: catalog
+      x-upstream-path: /api/catalog/videos/{video_id}
+      responses:
+        "200":
+          description: Métadonnées
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+              example:
+                id: intro-streaming
+                title: Intro au streaming distribué
+                description: Vue d'ensemble d'une plateforme de streaming miniature.
+                tags: [tech, architecture]
+                duration_seconds: 10
+                thumbnail_url: /api/v2/catalog/videos/intro-streaming/thumbnail
+                qualities: [360p, 720p]
+                featured: true
+                subtitle_langs: [fr]
+                stream_modes: [mp4]
+                subtitle_formats: [srt]
+        "404":
+          $ref: "#/components/responses/ResourceNotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/catalog/videos/{video_id}/thumbnail:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+    get:
+      tags: [v2, catalog]
+      operationId: getVideoThumbnailV2
+      summary: Vignette JPEG
+      description: Servie par le Catalog depuis sa base de données.
+      x-proxied-to: catalog
+      x-upstream-path: /api/catalog/videos/{video_id}/thumbnail
+      responses:
+        "200":
+          description: Corps binaire JPEG
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/ResourceNotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/stream/{video_id}:
+    parameters:
+      - $ref: "#/components/parameters/VideoId"
+      - $ref: "#/components/parameters/QualityQuery"
+    get:
+      tags: [v2, media]
+      operationId: streamMp4V2
+      summary: Flux MP4 progressif
+      description: |
+        Visionnage anonyme, sans JWT. `HEAD` est accepté avec les mêmes
+        en-têtes et sans corps.
+        Sans header `Range` : 200 et le fichier entier.
+        Avec `Range: bytes=0-65535` : 206 et la portion demandée.
+        La Gateway transmet `Range` et `If-Range` sans les modifier et
+        diffuse le corps en flux, sans le charger en mémoire.
+      x-proxied-to: media
+      x-upstream-path: /api/stream/{video_id}
+      responses:
+        "200":
+          description: Fichier MP4 complet
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+              example: bytes
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        "206":
+          description: Portion du fichier
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              example: bytes 0-65535/137070
+            Accept-Ranges:
+              schema:
+                type: string
+              example: bytes
+          content:
+            video/mp4:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Qualité invalide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Qualité inconnue (360p ou 720p)
+        "404":
+          $ref: "#/components/responses/ResourceNotFound"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+
+  /api/v2/upload/videos:
+    post:
+      tags: [v2, media]
+      operationId: uploadVideoV2
+      summary: Envoyer une vidéo
+      description: |
+        À confirmer en équipe avant implémentation.
+        JWT vérifié par la Gateway ; le compte doit être un compte créateur
+        (claim `channel_id`).
+        Traitement asynchrone : `202` signifie que le fichier est accepté. La
+        vidéo apparaît au catalogue quand le Catalog a traité le message
+        `video.uploaded`. Si le Catalog la rejette, elle n'apparaît jamais et
+        le fichier est supprimé.
+      x-proxied-to: media
+      x-upstream-path: /api/upload/videos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/UploadVideoRequest"
+      responses:
+        "202":
+          description: Fichier accepté, traitement en cours
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadAcceptedResponse"
+              example:
+                video_id: 9b2f4c1ad0e84b6f8c3e5a7d1f2b3c4d
+                status: processing
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Le compte n'est pas un compte créateur
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Compte créateur requis
+        "413":
+          description: Fichier au-delà de la taille maximale
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Fichier trop volumineux
+        "415":
+          description: Le fichier n'est pas un MP4
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Format non pris en charge (MP4 seulement)
+        "422":
+          description: Fichier illisible ou de moins d'une seconde
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Vidéo illisible
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "503":
+          description: Bus de messages injoignable, rien n'est gardé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetail"
+              example:
+                detail: Service indisponible
+
 components:
   securitySchemes:
     bearerAuth:
@@ -553,6 +1019,8 @@ components:
       description: |
         Header `Authorization: Bearer <token>`.
         Requis sur `GET /api/auth/me` et sur `GET|POST|DELETE /api/auth/favorites/*`.
+        En v2 : requis sur les mêmes routes sous `/api/v2` et sur
+        `POST /api/v2/upload/videos`, et vérifié par la Gateway.
 
   parameters:
     ProxyPath:
@@ -781,6 +1249,63 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Video"
+
+    FavoritesResponseV2:
+      type: object
+      additionalProperties: false
+      required: [video_ids, videos]
+      properties:
+        video_ids:
+          type: array
+          items:
+            type: string
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/VideoRef"
+
+    VideoRef:
+      type: object
+      additionalProperties: false
+      required: [id, title, channel_id]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        channel_id:
+          type: string
+
+    UploadVideoRequest:
+      type: object
+      required: [file, title]
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Fichier `video/mp4`
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        tags:
+          type: array
+          description: Champ répété, une valeur par tag
+          items:
+            type: string
+
+    UploadAcceptedResponse:
+      type: object
+      additionalProperties: false
+      required: [video_id, status]
+      properties:
+        video_id:
+          type: string
+          description: Identifiant généré par le Service Média
+        status:
+          type: string
+          enum: [processing]
 
     FavoriteActionResponse:
       type: object

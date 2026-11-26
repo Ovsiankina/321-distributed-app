@@ -4,6 +4,8 @@ Source normative des routes : [`gateway.openapi.yaml`](gateway.openapi.yaml) (Op
 
 Périmètre : santé, stub `GET /api/home`, routes Sprint 1 (auth, catalogue, recherche, streaming MP4), et le préfixe proxy `/api/subtitles/*` sans corps métier.
 
+Contrat cible : les routes `/api/v2/*` (auth, catalogue, lecture, envoi de vidéo), stables mais pas encore servies. Voir [`../API_GATEWAY.md`](../API_GATEWAY.md), section « Version 2 ».
+
 Hors de ce contrat : liste des tags, HLS, fichiers de sous-titres.
 
 ## Visualiser
@@ -15,4 +17,5 @@ Hors de ce contrat : liste des tags, HLS, fichiers de sous-titres.
 1. Modifier `gateway.openapi.yaml`.
 2. Si le routage change (préfixe, code Gateway, format d'erreur), aligner [`../API_GATEWAY.md`](../API_GATEWAY.md) dans la même PR. Ne pas y recopier les schémas.
 3. Review de Dmytro obligatoire dès qu'une PR ajoute, modifie ou supprime un endpoint.
-4. Ne pas ajouter ici les routes encore hors contrat (tags, HLS, fichiers de sous-titres).
+4. Ne pas modifier une route v1 : elle est figée. Toute évolution va sous `/api/v2`.
+5. Ne pas ajouter ici les routes encore hors contrat (tags, HLS, fichiers de sous-titres).
