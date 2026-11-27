@@ -11,6 +11,20 @@ def test_mariadb_engine_enables_pool_pre_ping(client):
         engine.dispose()
 
 
+def test_db_password_overrides_the_url(monkeypatch):
+    from app.config import resolved_database_url
+
+    monkeypatch.setenv(
+        "CATALOG_DATABASE_URL",
+        "mariadb+pymysql://catalog@catalog-db:3306/catalog",
+    )
+    monkeypatch.setenv("CATALOG_DB_PASSWORD", "secret/value")
+    url = resolved_database_url()
+    assert url.password == "secret/value"
+    assert url.host == "catalog-db"
+    assert url.database == "catalog"
+
+
 def test_sqlite_engine_keeps_check_same_thread(client):
     from app.db import _engine_kwargs
 

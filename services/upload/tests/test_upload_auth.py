@@ -1,55 +1,52 @@
-import inspect
-import time
-
-import jwt
-
-from conftest import AUDIENCE, ISSUER
-
-from app.routers.upload import upload_video
-
 UPLOAD_PATH = "/api/upload/videos"
-SAMPLE_FILE = ("clip.mp4", b"fake", "video/mp4")
+SAMPLE = ("clip.mp4", b"\x00\x00\x00\x18ftyp", "video/mp4")
 
 
-def test_upload_video_handler_is_sync():
-    assert not inspect.iscoroutinefunction(upload_video)
-
-
-def test_upload_without_token_returns_401(client):
-    response = client.post(UPLOAD_PATH, files={"file": SAMPLE_FILE})
-    assert response.status_code == 401
-    assert response.json() == {"detail": "Authentification requise"}
-
-
-def test_upload_with_invalid_token_returns_401(client):
-    response = client.post(
-        UPLOAD_PATH,
-        headers={"Authorization": "Bearer not-a-valid-jwt"},
-        files={"file": SAMPLE_FILE},
-    )
-    assert response.status_code == 401
-    assert response.json() == {"detail": "Authentification requise"}
-
-
-def test_upload_rejects_hs256_token(client):
-    now = int(time.time())
-    legacy = jwt.encode(
-        {"sub": "1", "exp": now + 3600, "iss": ISSUER, "aud": AUDIENCE},
-        "shared-secret",
-        algorithm="HS256",
-    )
-    response = client.post(
-        UPLOAD_PATH,
-        headers={"Authorization": f"Bearer {legacy}"},
-        files={"file": SAMPLE_FILE},
-    )
+def test_upload_without_identity_returns_401(client):
+    response = client.post(UPLOAD_PATH, files={"file": SAMPLE}, data={"title": "Demo"})
     assert response.status_code == 401
 
 
-def test_upload_with_valid_token_is_not_unauthorized(client, auth_headers):
+def test_upload_without_channel_returns_403(client):
     response = client.post(
         UPLOAD_PATH,
-        headers=auth_headers,
-        files={"file": SAMPLE_FILE},
+        headers={"X-User-Id": "1"},
+        files={"file": SAMPLE},
+        data={"title": "Demo"},
     )
-    assert response.status_code == 501
+    assert response.status_code == 403
+
+
+def test_upload_rejects_non_mp4(client, creator_headers):
+    response = client.post(
+        UPLOAD_PATH,
+        headers=creator_headers,
+        files={"file": ("clip.txt", b"hi", "text/plain")},
+        data={"title": "Demo"},
+    )
+    assert response.status_code == 415
+
+
+def test_upload_publishes_and_returns_202(client, creator_headers, monkeypatch):
+    published = {}
+
+    async def fake_publish(event_type, data):
+        published["type"] = event_type
+        published["data"] = data
+
+    monkeypatch.setattr("app.routers.upload.probe_duration", lambda _path: 4)
+    monkeypatch.setattr("app.routers.upload.make_thumbnail", lambda _path: b"\xff\xd8\xff\xd9")
+    monkeypatch.setattr("app.routers.upload.messaging.publish_event", fake_publish)
+
+    response = client.post(
+        UPLOAD_PATH,
+        headers=creator_headers,
+        files={"file": SAMPLE},
+        data={"title": "Demo", "tags": "a, b"},
+    )
+    assert response.status_code == 202, response.text
+    body = response.json()
+    assert body["status"] == "processing"
+    assert published["type"] == "video.uploaded"
+    assert published["data"]["channel_id"] == "UC-demo"
+    assert published["data"]["tags"] == ["a", "b"]

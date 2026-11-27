@@ -10,7 +10,7 @@ CLOCK_SKEW_SECONDS = 30
 _public_key = settings.jwt_private_key.public_key()
 
 
-def issue_token(user_id: int) -> str:
+def issue_token(user_id: int, channel_id: str | None = None) -> str:
     now = int(time.time())
     claims = {
         "iss": settings.jwt_issuer,
@@ -19,6 +19,8 @@ def issue_token(user_id: int) -> str:
         "iat": now,
         "exp": now + settings.token_ttl_hours * 3600,
     }
+    if channel_id:
+        claims["channel_id"] = channel_id
     return jwt.encode(claims, settings.jwt_private_key, algorithm=ALGORITHM)
 
 

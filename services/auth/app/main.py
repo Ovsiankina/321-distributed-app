@@ -6,8 +6,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+import asyncio
+
+from .bus import amqp_url, consume_video_events
 from .db import SessionLocal, init_db, ping_database
-from .routers import auth
+from .routers import auth, favorites
 from .seed import seed_users
 
 
@@ -19,11 +22,17 @@ async def lifespan(_app: FastAPI):
         seed_users(db)
     finally:
         db.close()
-    yield
+    consumer = asyncio.create_task(consume_video_events()) if amqp_url() else None
+    try:
+        yield
+    finally:
+        if consumer is not None:
+            consumer.cancel()
 
 
 app = FastAPI(title="Stream321 Auth", version="0.1.0", lifespan=lifespan)
 app.include_router(auth.router)
+app.include_router(favorites.router)
 
 
 def validation_detail(errors: list[dict]) -> str:

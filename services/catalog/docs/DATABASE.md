@@ -3,8 +3,8 @@
 ## Moteur et déploiement
 
 - **Production / Docker** : **MariaDB 11** dans le conteneur `catalog-db` ([`docker-compose.yml`](../docker-compose.yml)), volume `catalog-mariadb-data`.
-- **Connexion** : `CATALOG_DATABASE_URL` (ex. `mariadb+pymysql://catalog:catalog@catalog-db:3306/catalog`).
-- **Fichiers hors SGBD** : vignettes JPEG sur le volume `{CATALOG_DATA_DIR}` (voir section Vignettes).
+- **Connexion** : `CATALOG_DATABASE_URL`. En Docker le mot de passe est `CATALOG_DB_PASSWORD`, pas dans l'URL.
+- **Pas de fichiers** : les vignettes JPEG sont dans `videos.thumbnail_jpeg` (voir section Vignettes).
 
 Le microservice possède sa propre base (bloc « DB vidéo / catalogue » du schéma d'architecture), distincte des services login, favoris ou streaming.
 
@@ -43,11 +43,12 @@ erDiagram
 | `channel_id` | `VARCHAR(64)` | Identifiant stable du créateur / chaîne (voir Créateur) |
 | `title` | `VARCHAR(512)` | |
 | `description` | `TEXT` | |
-| `thumbnail_path` | `VARCHAR(512)` | Chemin relatif sous `CATALOG_DATA_DIR` (voir Vignettes) |
+| `thumbnail_path` | `VARCHAR(512)` | Inutilisé. La vignette est `thumbnail_jpeg`. |
+| `thumbnail_jpeg` | `MEDIUMBLOB` | JPEG servi par la route thumbnail. Vide pour une fixture tant que `announce` ne l'a pas envoyée. |
 | `duration_seconds` | `INT` | Dérivé de `duration_string` |
 | `featured` | `BOOLEAN` | `fixtures/featured.json`, pas le JSON YouTube |
 | `qualities` | `TEXT` | JSON array, ex. `["360p","720p"]` |
-| `subtitle_langs` | `TEXT` | JSON array, scan filesystem au seed |
+| `subtitle_langs` | `TEXT` | JSON array, lu dans le fixture (défaut `[]`) |
 | `stream_modes` | `TEXT` | JSON array, ex. `["mp4"]` |
 | `subtitle_formats` | `TEXT` | JSON array, ex. `["srt"]` |
 
@@ -81,13 +82,10 @@ Une vignette par vidéo au MVP.
 
 | Couche | Emplacement |
 |--------|-------------|
-| **Fichier** | `{CATALOG_DATA_DIR}/thumbs/{video_id}.jpg` |
-| **Base** | `videos.thumbnail_path` = chemin **relatif** à `CATALOG_DATA_DIR`, ex. `thumbs/{video_id}.jpg` |
-| **API publique** | `thumbnail_url` = `/api/catalog/videos/{id}/thumbnail` (contrat gateway ; pas le chemin disque) |
+| **Base** | `videos.thumbnail_jpeg`, JPEG, 256 ko au plus |
+| **API publique** | `thumbnail_url` = `/api/catalog/videos/{id}/thumbnail` |
 
-Génération : au seed, si `{CATALOG_VIDEOS_DIR}/{video_id}.mp4` existe et que le JPEG est absent, `ffmpeg` extrait une image vers le chemin ci-dessus. L'appel est borné à 30 secondes. En cas d'échec, d'expiration ou de binaire absent, le fichier partiel est supprimé et la vignette est ignorée. L'endpoint thumbnail lit le fichier via `thumbnail_path` (ou la convention `thumbs/{id}.jpg`).
-
-Pas de BLOB en MariaDB pour les images.
+Le catalog ne génère plus de vignette. Elle arrive dans `video.uploaded` (`origin=dataset` pour le jeu de démonstration, `origin=upload` pour un envoi). Sans octet en base, la route thumbnail répond 404.
 
 ## Mapping `catalog.json` → DB
 
@@ -99,19 +97,19 @@ Pas de BLOB en MariaDB pour les images.
 | `description` | `videos.description` |
 | `tags` + `categories` | lignes `tags` (dédupliquées) |
 | `duration_string` | `videos.duration_seconds` |
-| (convention) | `videos.thumbnail_path` = `thumbs/{id}.jpg` |
+| `qualities`, `subtitle_langs` | colonnes JSON, défaut `["360p","720p"]` et `[]` si le fixture ne les donne pas |
 
 Champs **non** importés au MVP : `channel`, `uploader_id`, `channel_follower_count`, dates, compteurs, `language`, `chapters`, `chapter_count`, `webpage_url`.
 
 ## Politique de seed
 
-Au démarrage (`lifespan` FastAPI), `sync_catalog_on_startup` prend un verrou fichier exclusif (`fcntl` sur `{CATALOG_DATA_DIR}/.catalog-sync.lock`) puis resynchronise la base. La base n'est pas laissée telle quelle lorsqu'elle contient déjà des lignes. Deux workers du même hôte attendent le verrou au lieu de modifier la base en parallèle.
+Au démarrage (`lifespan` FastAPI), `sync_catalog_on_startup` prend `GET_LOCK('catalog_sync', 30)` sur MariaDB, puis resynchronise la base. Sous SQLite (tests), il n'y a pas de verrou. Les lignes `source=upload` ne sont pas supprimées.
 
 1. `CREATE TABLE` si besoin (`Base.metadata.create_all`).
 2. Lecture `catalog.json` et `featured.json`.
-3. Upsert des vidéos (dont `channel_id`, `thumbnail_path`), remplacement complet des tags.
-4. Suppression des vidéos absentes du JSON.
-5. Génération optionnelle des JPEG via `ffmpeg` (timeout 30 s).
+3. Upsert des vidéos du fixture, remplacement de leurs tags.
+4. Suppression des vidéos fixture absentes du JSON.
+5. Publication `video.published` / `video.removed` si `CATALOG_AMQP_URL` est défini.
 
 Re-lancer le service resynchronise la DB avec les fixtures.
 

@@ -16,6 +16,8 @@ services:
 
   auth:
     build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       # Publié pour la Gateway (host.docker.internal:8001) tant qu'il n'y a pas de Compose commun.
       - "8001:8001"
@@ -24,9 +26,18 @@ services:
       AUTH_DATABASE_URL: mariadb+pymysql://auth@auth-db:3306/auth
       AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
       AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY:?définir AUTH_JWT_PRIVATE_KEY dans .env (voir README)}
+      AUTH_AMQP_URL: amqp://stream:stream@rabbitmq:5672/
     depends_on:
       auth-db:
         condition: service_healthy
+    networks:
+      - default
+      - stream321
 
 volumes:
   auth-mariadb-data:
+
+networks:
+  stream321:
+    external: true
+    name: stream321

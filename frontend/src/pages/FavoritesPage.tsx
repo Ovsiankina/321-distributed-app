@@ -14,7 +14,29 @@ export function FavoritesPage() {
     if (!user) return
     api
       .favorites()
-      .then((res) => setVideos(res.videos))
+      .then(async (res) => {
+        const details = await Promise.all(
+          res.videos.map((item) =>
+            api.video(item.id).catch(
+              () =>
+                ({
+                  id: item.id,
+                  title: item.title,
+                  description: '',
+                  tags: [],
+                  duration_seconds: 0,
+                  thumbnail_url: '',
+                  qualities: [],
+                  featured: false,
+                  subtitle_langs: [],
+                  stream_modes: ['mp4'],
+                  subtitle_formats: [],
+                }) satisfies Video,
+            ),
+          ),
+        )
+        setVideos(details)
+      })
       .catch((err: Error) => setError(err.message))
   }, [user])
 

@@ -10,10 +10,8 @@ npm install
 npm run dev
 ```
 
-Tant que la Gateway (E0-04) n'existe pas, le serveur de dev Vite redirige `/api`
-vers le service catalogue sur `http://127.0.0.1:8002` (voir `vite.config.ts`).
-Les routes `/api/auth/*` et `/api/stream/*` répondent donc 404 : la connexion,
-les favoris et la lecture vidéo ne fonctionnent qu'avec la Gateway.
+Le serveur de dev Vite redirige `/api` vers la Gateway sur `http://127.0.0.1:8000`.
+Le client n'appelle que `/api/v2`.
 
 ## Scripts
 

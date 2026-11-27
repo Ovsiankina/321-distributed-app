@@ -86,6 +86,6 @@ Champs obligatoires, sans propriétés additionnelles :
 | `featured` | boolean |
 | `subtitle_langs` | string[] |
 | `stream_modes` | `mp4` \| `hls` |
-| `subtitle_formats` | `srt` \| `vtt` (tableau ; le seed renvoie souvent `["srt"]` si des sous-titres existent sur disque) |
+| `subtitle_formats` | `srt` \| `vtt` (tableau ; `["srt"]` si `subtitle_langs` n'est pas vide) |
 
 `thumbnail_url` est toujours `/api/catalog/videos/{id}/thumbnail`.

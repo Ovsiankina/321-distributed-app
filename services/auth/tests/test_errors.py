@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    "path", ["/api/auth/favorites", "/api/auth/favorites/abc", "/inconnu"]
+    "path", ["/api/auth/inconnu", "/inconnu"]
 )
 def test_unknown_route_answers_in_french(client, path):
     response = client.get(path)

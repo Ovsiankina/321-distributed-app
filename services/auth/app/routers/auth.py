@@ -23,9 +23,11 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 _bearer = HTTPBearer(auto_error=False)
 
 
-def _token_response(user_id: int, email: str) -> TokenResponse:
+def _token_response(
+    user_id: int, email: str, channel_id: str | None = None
+) -> TokenResponse:
     return TokenResponse(
-        token=issue_token(user_id),
+        token=issue_token(user_id, channel_id),
         email=email,
         expires_in_hours=settings.token_ttl_hours,
     )
@@ -83,7 +85,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
             headers={"Retry-After": str(retry_after)},
         )
     account = db.execute(
-        select(User.id, User.password_hash).where(User.email == email)
+        select(User.id, User.password_hash, User.channel_id).where(User.email == email)
     ).one_or_none()
     # Rend la connexion au pool avant le hachage Argon2, qui dure des dizaines de ms.
     db.close()
@@ -93,7 +95,7 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Identifiants incorrects")
     login_limiter.reset(email)
     # La comparaison est binaire : l'email normalisé est celui qui est stocké.
-    return _token_response(account.id, email)
+    return _token_response(account.id, email, account.channel_id)
 
 
 @router.get("/me", response_model=UserResponse)

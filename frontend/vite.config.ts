@@ -5,9 +5,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // No Gateway yet (port set by E0-04): forward to the catalog service meanwhile.
     proxy: {
-      '/api': 'http://127.0.0.1:8002',
+      '/api': 'http://127.0.0.1:8000',
     },
   },
 })

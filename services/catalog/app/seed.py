@@ -1,28 +1,30 @@
-import fcntl
 import json
 from contextlib import contextmanager
 from pathlib import Path
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from .config import CATALOG_DATA_DIR
 from .import_catalog import (
     CatalogEntry,
     default_catalog_path,
     default_featured_path,
     load_catalog_file,
     load_featured_ids,
-    qualities_for,
     stream_modes_for,
     subtitle_formats_for,
-    subtitle_langs_for,
 )
-from .media import ensure_thumbnail, thumbnail_relative_path
 from .models import Tag, Video
 
 
-def _replace_tags(db: Session, pairs: list[tuple[str, str]]) -> None:
-    db.query(Tag).delete()
+class CatalogSync:
+    def __init__(self, removed: list[dict]):
+        self.removed = removed
+
+
+def _replace_tags(db: Session, pairs: list[tuple[str, str]], video_ids: set[str]) -> None:
+    if video_ids:
+        db.query(Tag).filter(Tag.video_id.in_(video_ids)).delete(synchronize_session=False)
     seen: set[tuple[str, str]] = set()
     for label, video_id in pairs:
         key = (label, video_id)
@@ -33,18 +35,17 @@ def _replace_tags(db: Session, pairs: list[tuple[str, str]]) -> None:
 
 
 def _video_fields(entry: CatalogEntry, featured_ids: set[str]) -> dict:
-    langs = subtitle_langs_for(entry.id)
     return {
         "channel_id": entry.channel_id,
         "title": entry.title,
         "description": entry.description,
-        "thumbnail_path": thumbnail_relative_path(entry.id),
+        "thumbnail_path": "",
         "duration_seconds": entry.duration_seconds,
         "featured": entry.id in featured_ids,
-        "qualities": json.dumps(qualities_for(entry.id)),
-        "subtitle_langs": json.dumps(langs),
+        "qualities": json.dumps(list(entry.qualities)),
+        "subtitle_langs": json.dumps(list(entry.subtitle_langs)),
         "stream_modes": json.dumps(stream_modes_for(entry.id)),
-        "subtitle_formats": json.dumps(subtitle_formats_for(entry.id)),
+        "subtitle_formats": json.dumps(subtitle_formats_for(entry.subtitle_langs)),
     }
 
 
@@ -52,16 +53,21 @@ def sync_catalog_db(
     db: Session,
     catalog_path: Path | None = None,
     featured_path: Path | None = None,
-) -> None:
+) -> CatalogSync:
     catalog_path = catalog_path or default_catalog_path()
     featured_path = featured_path or default_featured_path()
     entries = load_catalog_file(catalog_path)
     featured_ids = load_featured_ids(featured_path)
     valid = {entry.id for entry in entries}
+    removed: list[dict] = []
 
     for row in list(db.query(Video).all()):
-        if row.id not in valid:
-            db.delete(row)
+        if row.id in valid or row.source == "upload":
+            continue
+        removed.append(
+            {"video_id": row.id, "channel_id": row.channel_id, "title": row.title}
+        )
+        db.delete(row)
 
     for entry in entries:
         fields = _video_fields(entry, featured_ids)
@@ -76,30 +82,38 @@ def sync_catalog_db(
     _replace_tags(
         db,
         [(tag, entry.id) for entry in entries for tag in entry.tags],
+        valid,
     )
     db.commit()
-
-    for entry in entries:
-        ensure_thumbnail(entry.id)
+    return CatalogSync(removed)
 
 
 @contextmanager
-def catalog_sync_lock(blocking: bool = True):
-    CATALOG_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    handle = (CATALOG_DATA_DIR / ".catalog-sync.lock").open("a")
-    flags = fcntl.LOCK_EX
-    if not blocking:
-        flags |= fcntl.LOCK_NB
+def catalog_sync_lock(db: Session, blocking: bool = True):
+    bind = db.get_bind()
+    if bind.dialect.name == "sqlite":
+        yield
+        return
+    timeout = 30 if blocking else 0
+    # Session.commit() rend la connexion de la session au pool. GET_LOCK est
+    # lié à cette session MariaDB : RELEASE_LOCK doit passer par une connexion
+    # qui reste ouverte pendant tout le bloc, sinon le verrou reste pris.
+    connection = bind.connect()
     try:
-        fcntl.flock(handle.fileno(), flags)
+        acquired = connection.execute(
+            text("SELECT GET_LOCK('catalog_sync', :timeout)"),
+            {"timeout": timeout},
+        ).scalar()
+        if acquired != 1:
+            raise BlockingIOError("catalog_sync")
         try:
             yield
         finally:
-            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            connection.execute(text("SELECT RELEASE_LOCK('catalog_sync')"))
     finally:
-        handle.close()
+        connection.close()
 
 
-def sync_catalog_on_startup(db: Session) -> None:
-    with catalog_sync_lock():
-        sync_catalog_db(db)
+def sync_catalog_on_startup(db: Session) -> CatalogSync:
+    with catalog_sync_lock(db):
+        return sync_catalog_db(db)

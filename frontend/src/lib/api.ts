@@ -1,6 +1,7 @@
 import type { User, Video } from './types'
 
-// Every route follows the Gateway contract (docs/api/gateway.openapi.yaml).
+// Contrat public : /api/v2 (docs/api/gateway.openapi.yaml). La Gateway retire /v2.
+const API_BASE = '/api/v2'
 
 const TOKEN_KEY = '321-distributed-app_token'
 
@@ -48,34 +49,44 @@ interface TokenResponse {
 }
 
 export const api = {
-  videos: () => request<{ items: Video[]; total: number }>('/api/catalog/videos'),
-  featured: () => request<{ items: Video[] }>('/api/catalog/featured'),
+  videos: () => request<{ items: Video[]; total: number }>(`${API_BASE}/catalog/videos`),
+  featured: () => request<{ items: Video[] }>(`${API_BASE}/catalog/featured`),
   search: (q: string) =>
-    request<{ items: Video[]; q: string }>(`/api/catalog/search?q=${encodeURIComponent(q)}`),
-  video: (id: string) => request<Video>(`/api/catalog/videos/${encodeURIComponent(id)}`),
+    request<{ items: Video[]; q: string }>(
+      `${API_BASE}/catalog/search?q=${encodeURIComponent(q)}`,
+    ),
+  video: (id: string) =>
+    request<Video>(`${API_BASE}/catalog/videos/${encodeURIComponent(id)}`),
   login: (email: string, password: string) =>
-    request<TokenResponse>('/api/auth/login', {
+    request<TokenResponse>(`${API_BASE}/auth/login`, {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
   register: (email: string, password: string) =>
-    request<TokenResponse>('/api/auth/register', {
+    request<TokenResponse>(`${API_BASE}/auth/register`, {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
-  me: () => request<User>('/api/auth/me', {}, true),
+  me: () => request<User>(`${API_BASE}/auth/me`, {}, true),
   favorites: () =>
-    request<{ video_ids: string[]; videos: Video[] }>('/api/auth/favorites', {}, true),
+    request<{
+      video_ids: string[]
+      videos: { id: string; title: string; channel_id: string }[]
+    }>(`${API_BASE}/auth/favorites`, {}, true),
   addFavorite: (id: string) =>
     request<{ ok: boolean; video_id: string }>(
-      `/api/auth/favorites/${encodeURIComponent(id)}`,
+      `${API_BASE}/auth/favorites/${encodeURIComponent(id)}`,
       { method: 'POST' },
       true,
     ),
   removeFavorite: (id: string) =>
-    request<void>(`/api/auth/favorites/${encodeURIComponent(id)}`, { method: 'DELETE' }, true),
+    request<void>(
+      `${API_BASE}/auth/favorites/${encodeURIComponent(id)}`,
+      { method: 'DELETE' },
+      true,
+    ),
 }
 
 export function streamUrl(videoId: string, quality: string): string {
-  return `/api/stream/${encodeURIComponent(videoId)}?quality=${encodeURIComponent(quality)}`
+  return `${API_BASE}/stream/${encodeURIComponent(videoId)}?quality=${encodeURIComponent(quality)}`
 }

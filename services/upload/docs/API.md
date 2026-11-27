@@ -1,44 +1,43 @@
-# API du microservice Upload
+# API du service média
 
-> **Statut : provisoire.** La route upload n'est pas encore stable dans
-> [`docs/API_GATEWAY.md`](../../../docs/API_GATEWAY.md) ni dans
-> [`docs/api/gateway.openapi.yaml`](../../../docs/api/gateway.openapi.yaml).
-> Le chemin et le comportement ci-dessous servent au squelette et aux tests
-> d'intégration (`tests/integration/test_upload_auth.py`). Ne pas les traiter
-> comme contrat gateway tant que la section n'est pas marquée stable.
-
-## Conventions alignées gateway
-
-- Erreurs JSON : `{ "detail": "<message>" }`.
-- JWT absent ou invalide : **401** avec `detail` = `Authentification requise`
-  (même libellé que [`docs/API_GATEWAY.md`](../../../docs/API_GATEWAY.md)).
+Le service sert l'envoi et la lecture. La Gateway est le seul client public. Ce service lit `X-User-Id` et `X-Channel-Id`. Il ne vérifie pas le JWT et n'appelle pas le catalog.
 
 ## Santé
 
 ### `GET /health`
 
-Réponse `200` :
+Réponse `200` : `{ "status": "ok", "service": "media" }`.
 
-```json
-{ "status": "ok", "service": "upload" }
-```
-
-## Upload (provisoire)
+## Envoi
 
 ### `POST /api/upload/videos`
 
-| Prérequis | Valeur |
-|-----------|--------|
-| Header | `Authorization: Bearer <JWT>` (EdDSA émis par auth : `iss`, `aud`, clé publique dans `UPLOAD_JWT_PUBLIC_KEY`) |
-| Corps | `multipart/form-data`, champ fichier `file` |
-| Catalog | Avant tout traitement : `GET {UPLOAD_CATALOG_URL}/health` doit répondre **200** avec `{"status":"ok","service":"catalog"}` |
+`multipart/form-data` : `file` (MP4), `title`, `description`, `tags` (liste séparée par des virgules).
 
-| Code | Cas (squelette actuel) |
-|------|-------------------------|
-| 401 | Pas de JWT ou JWT invalide |
-| 503 | Catalog injoignable, `/health` non 200, ou corps qui n'est pas un objet `{"status":"ok","service":"catalog"}` |
-| 400 | Fichier manquant |
-| 415 | `Content-Type` non vidéo |
-| 501 | JWT valide, catalog ON, mais traitement upload non implémenté |
+| Code | Cas |
+|------|-----|
+| 202 | Fichier écrit, message `video.uploaded` publié. Corps `{ "video_id", "status": "processing" }`. |
+| 400 | Titre vide ou fichier vide |
+| 401 | `X-User-Id` absent |
+| 403 | `X-Channel-Id` absent |
+| 413 | Fichier au-dessus de `UPLOAD_MAX_BYTES` |
+| 415 | Contenu autre que `video/mp4` |
+| 422 | Fichier illisible, durée sous 1 s, ou miniature impossible |
+| 503 | Broker injoignable. Le fichier est supprimé. |
 
-**Politique catalog :** pas de mise en attente. Si le catalog est injoignable ou si son `/health` est invalide, la requête s'arrête en **503** sans écriture sur `UPLOAD_DATA_DIR`. Le client réessaie une fois le catalog disponible ; le serveur ne conserve pas de fichier pour une reprise différée.
+## Lecture
+
+### `GET` et `HEAD /api/stream/{video_id}`
+
+| Code | Cas |
+|------|-----|
+| 200 | Fichier entier |
+| 206 | Requête avec `Range` |
+| 400 | `quality` autre que `360p` ou `720p` |
+| 404 | Fichier absent |
+
+`quality` est vérifié. Un seul MP4 existe par vidéo : la qualité ne change pas le fichier servi.
+
+## Compensation
+
+Un message `video.rejected` supprime `{video_id}.mp4`. Un second message pour le même fichier ne fait rien. Un `video_id` qui n'est pas un identifiant simple est ignoré.

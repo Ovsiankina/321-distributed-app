@@ -25,17 +25,13 @@ def build_catalog_test_client(
     database_url: str,
     fixtures_dir: Path = FULL_FIXTURES,
 ) -> TestClient:
-    data_dir = tmp_path / "data"
-    data_dir.mkdir(parents=True, exist_ok=True)
-    (tmp_path / "videos").mkdir(exist_ok=True)
-    (tmp_path / "subtitles").mkdir(exist_ok=True)
-
     sys.path.insert(0, str(CATALOG_ROOT))
-    os.environ["CATALOG_DATA_DIR"] = str(data_dir)
     os.environ["CATALOG_FIXTURES_DIR"] = str(fixtures_dir)
-    os.environ["CATALOG_VIDEOS_DIR"] = str(tmp_path / "videos")
-    os.environ["CATALOG_SUBTITLES_DIR"] = str(tmp_path / "subtitles")
     os.environ["CATALOG_DATABASE_URL"] = database_url
+    os.environ.pop("CATALOG_DB_PASSWORD", None)
+    os.environ.pop("CATALOG_VIDEOS_DIR", None)
+    os.environ.pop("CATALOG_SUBTITLES_DIR", None)
+    os.environ.pop("CATALOG_DATA_DIR", None)
 
     _purge_app_modules()
     main = importlib.import_module("app.main")

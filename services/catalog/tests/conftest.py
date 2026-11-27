@@ -20,16 +20,12 @@ def _purge_app_modules() -> None:
 def _build_client(tmp_path: Path, fixtures_dir: Path) -> TestClient:
     data_dir = tmp_path / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
-    (tmp_path / "videos").mkdir(exist_ok=True)
-    (tmp_path / "subtitles").mkdir(exist_ok=True)
 
     import os
 
-    os.environ["CATALOG_DATA_DIR"] = str(data_dir)
     os.environ["CATALOG_FIXTURES_DIR"] = str(fixtures_dir)
-    os.environ["CATALOG_VIDEOS_DIR"] = str(tmp_path / "videos")
-    os.environ["CATALOG_SUBTITLES_DIR"] = str(tmp_path / "subtitles")
     os.environ["CATALOG_DATABASE_URL"] = f"sqlite:///{data_dir / 'test.db'}"
+    os.environ.pop("CATALOG_DB_PASSWORD", None)
 
     _purge_app_modules()
     main = importlib.import_module("app.main")
@@ -53,12 +49,16 @@ def data_dir(tmp_path):
 
 
 @pytest.fixture
-def thumb_jpeg(client, data_dir):
-    from app.media import thumb_path
+def thumb_jpeg(client):
+    from app.db import SessionLocal
+    from app.models import Video
 
-    path = thumb_path("test-video-one")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(
-        b"\xff\xd8\xff\xd9"
-    )
-    return path
+    blob = b"\xff\xd8\xff\xd9"
+    db = SessionLocal()
+    try:
+        row = db.get(Video, "test-video-one")
+        row.thumbnail_jpeg = blob
+        db.commit()
+    finally:
+        db.close()
+    return blob
